@@ -163,10 +163,38 @@ export const ChatScreen = () => {
             </div>
           </div>
         </div>
-        <IconButton variant="ghost" size="sm">
-          <MoreVertical className="h-5 w-5" />
-        </IconButton>
+        <button
+          onClick={toggleRole}
+          title="Toggle role (demo)"
+          className={
+            "press flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-all " +
+            (isTeacher
+              ? "bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 shadow-[0_0_14px_hsl(35_95%_55%/0.5)]"
+              : "border border-glass-border/40 bg-secondary/50 text-muted-foreground")
+          }
+        >
+          <GraduationCap className="h-3 w-3" />
+          {isTeacher ? "Teacher" : "Student"}
+        </button>
       </div>
+
+      {/* Pinned banner */}
+      {pinned && (
+        <div className="flex items-center gap-2 border-b border-primary/30 bg-primary/5 px-4 py-2 text-[11px] animate-fade-in">
+          <Pin className="h-3 w-3 text-primary-glow" />
+          <span className="font-semibold text-primary-glow">Pinned</span>
+          <span className="truncate text-muted-foreground">— {pinned.author}: {pinned.text}</span>
+          {isTeacher && (
+            <button
+              onClick={() => updateMsg(pinned.id, { pinned: false })}
+              className="ml-auto rounded-full p-1 text-muted-foreground hover:bg-white/5"
+              title="Unpin"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Control Bar */}
       <div className="flex items-center justify-between gap-2 border-b border-glass-border/30 bg-card/40 px-4 py-2.5">
