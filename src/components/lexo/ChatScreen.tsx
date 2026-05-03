@@ -102,7 +102,7 @@ export const ChatScreen = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
+      <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4 [&>*]:animate-fade-in">
         <ChatBubble
           author="Omar"
           text={"Hi everyone! 👋\nHow was your weekend?"}
@@ -169,6 +169,8 @@ export const ChatScreen = () => {
         <div className="mx-auto max-w-[85%] rounded-2xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-center text-[11px] text-amber-200 shadow-[0_0_18px_hsl(40_90%_55%/0.15)]">
           <span className="font-semibold">System:</span> Please try to use English only 😊
         </div>
+
+        <TypingIndicator users={typing} />
       </div>
 
       {/* Bottom Action chips */}
