@@ -5,9 +5,11 @@ interface MobileFrameProps {
   children: ReactNode;
   className?: string;
   label?: string;
+  size?: "sm" | "md";
 }
 
-export const MobileFrame = ({ children, className, label }: MobileFrameProps) => {
+export const MobileFrame = ({ children, className, label, size = "md" }: MobileFrameProps) => {
+  const w = size === "sm" ? "w-[260px]" : "w-[360px]";
   return (
     <div className="flex flex-col items-center gap-4">
       {label && (
@@ -17,7 +19,8 @@ export const MobileFrame = ({ children, className, label }: MobileFrameProps) =>
       )}
       <div
         className={cn(
-          "relative w-[360px] overflow-hidden rounded-[2.5rem] border border-glass-border/60",
+          "relative overflow-hidden rounded-[2.5rem] border border-glass-border/60",
+          w,
           "bg-card/80 shadow-deep backdrop-blur-xl",
           className,
         )}
