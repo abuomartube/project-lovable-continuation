@@ -1,7 +1,33 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
-import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal } from "lucide-react";
+import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import type { SentenceAnalysis } from "@/hooks/useSentenceAnalysis";
+
+// Highlight mistake spans inside the original text
+function renderHighlighted(text: string, mistakes: { wrong: string }[]) {
+  if (!mistakes?.length) return text;
+  const escaped = mistakes
+    .map((m) => m.wrong)
+    .filter(Boolean)
+    .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!escaped.length) return text;
+  const re = new RegExp(`(${escaped.join("|")})`, "gi");
+  const testRe = new RegExp(`^(?:${escaped.join("|")})$`, "i");
+  const parts = text.split(re);
+  return parts.map((p, i) =>
+    p && testRe.test(p) ? (
+      <mark
+        key={i}
+        className="rounded bg-rose-400/20 px-0.5 text-rose-100 underline decoration-rose-400/70 decoration-wavy underline-offset-2"
+      >
+        {p}
+      </mark>
+    ) : (
+      <span key={i}>{p}</span>
+    )
+  );
+}
 
 export interface Correction {
   original: string;
@@ -22,6 +48,10 @@ interface ChatBubbleProps {
   pinned?: boolean;
   broadcast?: boolean;        // big "broadcast to room" banner-style
   correction?: Correction;
+  // Smart learning layer (AI suggestions for student's own messages)
+  learning?: SentenceAnalysis | null;
+  learningLoading?: boolean;
+  onApplyImproved?: (improved: string) => void;
   // Teacher controls (only rendered when isTeacherViewer + author is student)
   isTeacherViewer?: boolean;
   onTogglePin?: () => void;
@@ -43,6 +73,7 @@ const RoleBadge = ({ role }: { role: "student" | "teacher" }) =>
 export const ChatBubble = ({
   author, text, time, side = "left", reactions, avatarSrc,
   authorRole = "student", highlight, pinned, broadcast, correction,
+  learning, learningLoading, onApplyImproved,
   isTeacherViewer, onTogglePin, onToggleHighlight, onCorrect,
 }: ChatBubbleProps) => {
   const isMe = side === "right";
@@ -155,6 +186,72 @@ export const ChatBubble = ({
             </p>
             {correction.note && (
               <p className="mt-1 text-[10px] text-emerald-200/70">💡 {correction.note}</p>
+            )}
+          </div>
+        )}
+
+        {/* Smart learning suggestions (student self-feedback) */}
+        {(learning || learningLoading) && (
+          <div className={cn("mt-1 w-full", isMe && "flex justify-end")}>
+            {learningLoading && !learning && (
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-glass-border/40 bg-secondary/40 px-2.5 py-1 text-[10px] text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" /> Checking your sentence...
+              </div>
+            )}
+            {learning && (
+              <div className="animate-fade-in max-w-full rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs shadow-[0_0_16px_hsl(250_80%_60%/0.15)]">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary-glow">
+                  <Sparkles className="h-3 w-3" /> Smart suggestion
+                </div>
+
+                {learning.mistakes && learning.mistakes.length > 0 ? (
+                  <p className={cn("mt-1 leading-snug", isMe ? "text-right" : "text-left")}>
+                    {renderHighlighted(text, learning.mistakes)}
+                  </p>
+                ) : null}
+
+                {learning.corrected && learning.corrected.trim() !== text.trim() && (
+                  <p className="mt-1 text-foreground/90">
+                    <span className="text-muted-foreground line-through">{text}</span>
+                    <span className="mx-1.5 text-primary-glow">→</span>
+                    <span className="font-medium">{learning.corrected}</span>
+                  </p>
+                )}
+
+                {learning.mistakes && learning.mistakes.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {learning.mistakes.map((m, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 text-[9px] text-rose-200"
+                      >
+                        <span className="line-through opacity-70">{m.wrong}</span>
+                        <span className="opacity-50">→</span>
+                        <span className="font-semibold">{m.right}</span>
+                        <span className="ml-0.5 rounded-sm bg-rose-400/20 px-1 text-[8px] uppercase tracking-wide">
+                          {m.type}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {learning.hint && (
+                  <p className="mt-1.5 flex items-start gap-1 text-[11px] text-amber-200/90">
+                    <Lightbulb className="mt-0.5 h-3 w-3 shrink-0 text-amber-300" />
+                    <span>{learning.hint}</span>
+                  </p>
+                )}
+
+                {learning.improved && learning.improved.trim() !== text.trim() && onApplyImproved && (
+                  <button
+                    onClick={() => onApplyImproved(learning.improved)}
+                    className="press mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-2.5 py-1 text-[10px] font-semibold text-white shadow-glow"
+                  >
+                    <Wand2 className="h-3 w-3" /> Improve sentence
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
