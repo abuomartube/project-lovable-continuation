@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 
 const KEY = "lexo:streak:v1";
 
@@ -31,39 +31,48 @@ const load = (): StreakState => {
   return EMPTY;
 };
 
-const compute = (prev: StreakState, today: string): StreakState => {
-  if (prev.lastDay === today) return prev;
+let state: StreakState = load();
+const listeners = new Set<() => void>();
+const emit = () => listeners.forEach((l) => l());
+
+const setState = (next: StreakState) => {
+  state = next;
+  try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* noop */ }
+  emit();
+};
+
+export const pingStreak = () => {
+  const today = todayKey();
+  if (state.lastDay === today) return;
   let current = 1;
-  if (prev.lastDay) {
-    const gap = daysBetween(prev.lastDay, today);
-    if (gap === 1) current = prev.current + 1;
-    else if (gap === 0) current = prev.current || 1;
+  if (state.lastDay) {
+    const gap = daysBetween(state.lastDay, today);
+    if (gap === 1) current = state.current + 1;
+    else if (gap === 0) current = state.current || 1;
     else current = 1;
   }
-  const longest = Math.max(prev.longest, current);
-  return { current, longest, lastDay: today };
+  setState({ current, longest: Math.max(state.longest, current), lastDay: today });
+};
+
+export const resetStreak = () => setState(EMPTY);
+
+const subscribe = (cb: () => void) => {
+  listeners.add(cb);
+  return () => { listeners.delete(cb); };
 };
 
 export const useStreak = () => {
-  const [state, setState] = useState<StreakState>(load);
-
-  const ping = useCallback(() => {
-    setState((prev) => {
-      const next = compute(prev, todayKey());
-      if (next === prev) return prev;
-      try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* noop */ }
-      return next;
-    });
-  }, []);
-
-  useEffect(() => { ping(); }, [ping]);
-
-  // Status helpers
+  const snap = useSyncExternalStore(subscribe, () => state, () => state);
   const today = todayKey();
-  const activeToday = state.lastDay === today;
-  const atRisk = state.lastDay
-    ? daysBetween(state.lastDay, today) === 1 && !activeToday
+  const activeToday = snap.lastDay === today;
+  const atRisk = snap.lastDay
+    ? daysBetween(snap.lastDay, today) === 1 && !activeToday
     : false;
+  const ping = useCallback(pingStreak, []);
+  return { ...snap, activeToday, atRisk, ping };
+};
 
-  return { ...state, activeToday, atRisk, ping };
+// Auto-ping each day on mount via a small hook
+export const useDailyStreakPing = () => {
+  useEffect(() => { pingStreak(); }, []);
 };
