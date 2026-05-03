@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
-import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2 } from "lucide-react";
+import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2, Star, Trophy } from "lucide-react";
 import { useState } from "react";
 import type { SentenceAnalysis } from "@/hooks/useSentenceAnalysis";
 
@@ -47,6 +47,7 @@ interface ChatBubbleProps {
   highlight?: boolean;        // teacher-highlighted message
   pinned?: boolean;
   broadcast?: boolean;        // big "broadcast to room" banner-style
+  bestMessage?: boolean;      // teacher-marked "best student message"
   correction?: Correction;
   // Smart learning layer (AI suggestions for student's own messages)
   learning?: SentenceAnalysis | null;
@@ -56,6 +57,7 @@ interface ChatBubbleProps {
   isTeacherViewer?: boolean;
   onTogglePin?: () => void;
   onToggleHighlight?: () => void;
+  onToggleBest?: () => void;
   onCorrect?: () => void;
 }
 
@@ -72,9 +74,9 @@ const RoleBadge = ({ role }: { role: "student" | "teacher" }) =>
 
 export const ChatBubble = ({
   author, text, time, side = "left", reactions, avatarSrc,
-  authorRole = "student", highlight, pinned, broadcast, correction,
+  authorRole = "student", highlight, pinned, broadcast, bestMessage, correction,
   learning, learningLoading, onApplyImproved,
-  isTeacherViewer, onTogglePin, onToggleHighlight, onCorrect,
+  isTeacherViewer, onTogglePin, onToggleHighlight, onToggleBest, onCorrect,
 }: ChatBubbleProps) => {
   const isMe = side === "right";
   const [hover, setHover] = useState(false);
@@ -123,6 +125,11 @@ export const ChatBubble = ({
                 <Pin className="h-2.5 w-2.5" /> Pinned
               </span>
             )}
+            {bestMessage && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-amber-950 shadow-[0_0_10px_hsl(35_95%_55%/0.45)]">
+                <Trophy className="h-2.5 w-2.5" /> Best
+              </span>
+            )}
           </div>
         )}
 
@@ -134,6 +141,7 @@ export const ChatBubble = ({
               authorRole === "teacher" && !isMe && "border border-amber-400/40 bg-amber-400/10 shadow-[0_0_18px_hsl(35_95%_55%/0.18)]",
               highlight && "ring-2 ring-primary/60 shadow-glow",
               pinned && "ring-1 ring-primary/40",
+              bestMessage && "ring-2 ring-amber-400/70 shadow-[0_0_22px_hsl(35_95%_55%/0.45)]",
             )}
           >
             {text}
@@ -166,6 +174,14 @@ export const ChatBubble = ({
                   pinned ? "text-primary-glow" : "text-muted-foreground")}
               >
                 <Pin className="h-3 w-3" />
+              </button>
+              <button
+                onClick={onToggleBest}
+                title={bestMessage ? "Remove best" : "Mark as best"}
+                className={cn("press flex h-6 w-6 items-center justify-center rounded-full hover:bg-amber-400/15",
+                  bestMessage ? "text-amber-300" : "text-muted-foreground")}
+              >
+                <Star className={cn("h-3 w-3", bestMessage && "fill-amber-300")} />
               </button>
               <span className="px-0.5 text-muted-foreground"><MoreHorizontal className="h-3 w-3" /></span>
             </div>
