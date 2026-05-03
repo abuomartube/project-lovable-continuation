@@ -12,6 +12,8 @@ import { RaiseHandButton } from "./RaiseHandButton";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
+import { containsArabic, arabicRatio } from "@/lib/language";
+import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
 
 export const ChatScreen = () => {
@@ -42,11 +44,20 @@ export const ChatScreen = () => {
   const sendMessage = () => {
     const text = draft.trim();
     if (!text) return;
+    if (containsArabic(text)) {
+      setLangWarning(true);
+      return;
+    }
     award({ type: "message", chars: text.length });
     setDraft("");
+    setLangWarning(false);
   };
 
   const { online, typing, events } = useLivePresence(18);
+
+  const [langWarning, setLangWarning] = useState(false);
+  const arabicNow = containsArabic(draft);
+  const ratio = arabicRatio(draft);
 
   return (
     <div className="relative flex h-full flex-col">
@@ -194,14 +205,41 @@ export const ChatScreen = () => {
         </div>
 
         {/* Input */}
+        {(langWarning || arabicNow) && (
+          <div
+            role="alert"
+            className="mb-2 flex animate-fade-in items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[11px] text-amber-200 shadow-[0_0_18px_hsl(40_90%_55%/0.2)]"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1">
+              <strong className="font-semibold">Try in English.</strong>{" "}
+              {ratio > 0.5
+                ? "This room is English Only — practice helps you progress faster."
+                : "We detected Arabic letters. Switch to English to keep practicing."}
+            </span>
+            <button
+              onClick={() => { setDraft(""); setLangWarning(false); }}
+              className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-semibold text-amber-100 hover:bg-amber-400/30"
+            >
+              Clear
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <button className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
             <Smile className="h-5 w-5" />
           </button>
-          <div className="flex h-11 flex-1 items-center gap-2 rounded-full border border-glass-border/40 bg-secondary/50 px-4">
+          <div
+            className={
+              "flex h-11 flex-1 items-center gap-2 rounded-full border bg-secondary/50 px-4 transition-colors " +
+              (arabicNow
+                ? "border-amber-400/60 shadow-[0_0_18px_hsl(40_90%_55%/0.25)]"
+                : "border-glass-border/40")
+            }
+          >
             <input
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => { setDraft(e.target.value); if (langWarning) setLangWarning(false); }}
               onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
               placeholder="Type a message..."
               className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
