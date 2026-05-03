@@ -1,4 +1,4 @@
-import { Target, Clock, Sparkles, CheckCircle2, Flame } from "lucide-react";
+import { Target, Clock, Sparkles, CheckCircle2, Flame, MessageSquarePlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DAILY_CHALLENGES } from "@/lib/challenges";
 import { useDailyChallenge, getDayIndex, msUntilNextDay } from "@/hooks/useDailyChallenge";
@@ -19,9 +19,23 @@ function formatCountdown(ms: number) {
 
 interface Props {
   onStart: (challenge: string) => void;
+  onQuickReply?: (starter: string) => void;
 }
 
+const QUICK_REPLIES = [
+  "I went...",
+  "I like...",
+  "Yesterday I...",
+  "I think that...",
+  "My favorite...",
+];
+
 export const DailyChallengeBanner = ({ onStart }: Props) => {
+  // (props destructured below for backward compat)
+  return <DailyChallengeBannerInner onStart={onStart} />;
+};
+
+const DailyChallengeBannerInner = ({ onStart, onQuickReply }: Props) => {
   const dayIndex = useMemo(() => getDayIndex(), []);
   const challenge = useMemo(() => pickChallengeForDay(dayIndex), [dayIndex]);
   const { completed, streak, bestStreak, complete } = useDailyChallenge();
@@ -87,6 +101,22 @@ export const DailyChallengeBanner = ({ onStart }: Props) => {
             {completed ? "Done" : "Start Answer"}
           </button>
         </div>
+      </div>
+
+      {/* Quick replies */}
+      <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5">
+        <span className="inline-flex shrink-0 items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          <MessageSquarePlus className="h-3 w-3" /> Quick start
+        </span>
+        {QUICK_REPLIES.map((q) => (
+          <button
+            key={q}
+            onClick={() => (onQuickReply ?? onStart)(q + " ")}
+            className="press shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] text-primary-glow hover:bg-primary/20"
+          >
+            {q}
+          </button>
+        ))}
       </div>
     </div>
   );
