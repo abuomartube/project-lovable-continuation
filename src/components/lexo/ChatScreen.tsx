@@ -62,6 +62,8 @@ export const ChatScreen = () => {
   const [analyses, setAnalyses] = useState<Record<string, SentenceAnalysis | null>>({});
   const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
   const [improvingDraft, setImprovingDraft] = useState(false);
+  const [voiceNudge, setVoiceNudge] = useState(false);
+  const voiceNudgeTimer = useRef<number | null>(null);
 
   const updateMsg = (id: string, patch: Partial<TextMsg>) =>
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -163,6 +165,10 @@ export const ChatScreen = () => {
     triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
+    // Encourage speaking after typing
+    setVoiceNudge(true);
+    if (voiceNudgeTimer.current) window.clearTimeout(voiceNudgeTimer.current);
+    voiceNudgeTimer.current = window.setTimeout(() => setVoiceNudge(false), 5000);
   };
 
   const improveDraft = async () => {
