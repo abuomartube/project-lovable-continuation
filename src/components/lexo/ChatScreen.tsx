@@ -11,6 +11,7 @@ import { TypingIndicator } from "./TypingIndicator";
 import { PresenceToasts } from "./PresenceToasts";
 import { RaiseHandButton } from "./RaiseHandButton";
 import { CorrectionDialog } from "./CorrectionDialog";
+import { RoomRulesBanner } from "./RoomRulesBanner";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
