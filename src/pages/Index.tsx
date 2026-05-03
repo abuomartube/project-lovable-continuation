@@ -86,10 +86,10 @@ const Index = () => {
                   key={n.id}
                   onClick={() => setActive(n.id)}
                   className={
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all " +
+                    "press flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all " +
                     (isActive
                       ? "bg-gradient-primary text-white shadow-glow"
-                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground")
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground hover:translate-x-0.5")
                   }
                 >
                   <n.Icon className="h-4 w-4" />
