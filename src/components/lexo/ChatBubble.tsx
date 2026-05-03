@@ -13,9 +13,10 @@ function renderHighlighted(text: string, mistakes: { wrong: string }[]) {
     .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   if (!escaped.length) return text;
   const re = new RegExp(`(${escaped.join("|")})`, "gi");
+  const testRe = new RegExp(`^(?:${escaped.join("|")})$`, "i");
   const parts = text.split(re);
   return parts.map((p, i) =>
-    re.test(p) ? (
+    p && testRe.test(p) ? (
       <mark
         key={i}
         className="rounded bg-rose-400/20 px-0.5 text-rose-100 underline decoration-rose-400/70 decoration-wavy underline-offset-2"
