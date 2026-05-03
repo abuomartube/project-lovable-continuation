@@ -129,8 +129,8 @@ const Index = () => {
           </header>
 
           <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4">
-            <Panel className="min-h-0">
-              <div key={active} className="h-full animate-fade-in overflow-y-auto">{renderCenterTop()}</div>
+            <Panel className="min-h-0 glass-hover">
+              <div key={active} className="page-enter h-full overflow-y-auto">{renderCenterTop()}</div>
             </Panel>
             <Panel className="min-h-0">
               <div className="h-full">
