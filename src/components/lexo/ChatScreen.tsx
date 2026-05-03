@@ -1,8 +1,8 @@
-import { ChevronLeft, MoreVertical, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
-import { ChatBubble } from "./ChatBubble";
+import { ChatBubble, type Correction } from "./ChatBubble";
 import { VoiceBubble } from "./VoiceBubble";
 import { IconButton } from "./IconButton";
 import { PushToTalk } from "./PushToTalk";
@@ -10,17 +10,49 @@ import { SpeakingIndicator } from "./SpeakingIndicator";
 import { TypingIndicator } from "./TypingIndicator";
 import { PresenceToasts } from "./PresenceToasts";
 import { RaiseHandButton } from "./RaiseHandButton";
+import { CorrectionDialog } from "./CorrectionDialog";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
+import { useRole } from "@/hooks/useRole";
 import { containsArabic, arabicRatio } from "@/lib/language";
 import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
+
+interface TextMsg {
+  id: string;
+  author: string;
+  authorRole: "student" | "teacher";
+  text: string;
+  time: string;
+  reactions?: { emoji: string; count: number }[];
+  side?: "left" | "right";
+  highlight?: boolean;
+  pinned?: boolean;
+  broadcast?: boolean;
+  correction?: Correction;
+}
+
+const SEED_MESSAGES: TextMsg[] = [
+  { id: "m1", author: "Omar",  authorRole: "student", text: "Hi everyone! 👋\nHow was your weekend?", time: "10:20 AM", reactions: [{ emoji: "❤️", count: 2 }] },
+  { id: "m2", author: "Sara",  authorRole: "student", text: "It was great! I went hiking\nwith my friends 😊", time: "10:21 AM", reactions: [{ emoji: "❤️", count: 1 }] },
+  { id: "m3", author: "Ms. Reem", authorRole: "teacher", text: "Welcome everyone! Let's start with introductions.", time: "10:24 AM" },
+];
 
 export const ChatScreen = () => {
   const [autoDuck, setAutoDuck] = useState(true);
   const [draft, setDraft] = useState("");
   const { award } = useGamification();
+  const { isTeacher, toggle: toggleRole } = useRole();
+  const [messages, setMessages] = useState<TextMsg[]>(SEED_MESSAGES);
+  const [correcting, setCorrecting] = useState<TextMsg | null>(null);
+  const [broadcasting, setBroadcasting] = useState(false);
+  const [broadcastText, setBroadcastText] = useState("");
+
+  const updateMsg = (id: string, patch: Partial<TextMsg>) =>
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+
+  const pinned = messages.find((m) => m.pinned);
   const { level, speakers, pttActive, error, startTalking, stopTalking } = useVoice({
     roomId: "speaking-intermediate",
     identity: { id: "me", name: "You" },
@@ -64,10 +96,35 @@ export const ChatScreen = () => {
       setLangWarning(true);
       return;
     }
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [...prev, {
+      id: `me-${Date.now()}`,
+      author: isTeacher ? "Ms. Reem" : "You",
+      authorRole: isTeacher ? "teacher" : "student",
+      text,
+      time,
+      side: "right",
+    }]);
     award({ type: "message", chars: text.length });
     triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
+  };
+
+  const sendBroadcast = () => {
+    const text = broadcastText.trim();
+    if (!text || !isTeacher) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [...prev, {
+      id: `bc-${Date.now()}`,
+      author: "Ms. Reem",
+      authorRole: "teacher",
+      text,
+      time,
+      broadcast: true,
+    }]);
+    setBroadcastText("");
+    setBroadcasting(false);
   };
 
   const { online, typing, events } = useLivePresence(18);
@@ -82,6 +139,7 @@ export const ChatScreen = () => {
   const ratio = arabicRatio(draft);
 
   return (
+    <>
     <div className="relative flex h-full flex-col">
       <PresenceToasts events={events} />
       {/* Header */}
@@ -106,10 +164,38 @@ export const ChatScreen = () => {
             </div>
           </div>
         </div>
-        <IconButton variant="ghost" size="sm">
-          <MoreVertical className="h-5 w-5" />
-        </IconButton>
+        <button
+          onClick={toggleRole}
+          title="Toggle role (demo)"
+          className={
+            "press flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-all " +
+            (isTeacher
+              ? "bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 shadow-[0_0_14px_hsl(35_95%_55%/0.5)]"
+              : "border border-glass-border/40 bg-secondary/50 text-muted-foreground")
+          }
+        >
+          <GraduationCap className="h-3 w-3" />
+          {isTeacher ? "Teacher" : "Student"}
+        </button>
       </div>
+
+      {/* Pinned banner */}
+      {pinned && (
+        <div className="flex items-center gap-2 border-b border-primary/30 bg-primary/5 px-4 py-2 text-[11px] animate-fade-in">
+          <Pin className="h-3 w-3 text-primary-glow" />
+          <span className="font-semibold text-primary-glow">Pinned</span>
+          <span className="truncate text-muted-foreground">— {pinned.author}: {pinned.text}</span>
+          {isTeacher && (
+            <button
+              onClick={() => updateMsg(pinned.id, { pinned: false })}
+              className="ml-auto rounded-full p-1 text-muted-foreground hover:bg-white/5"
+              title="Unpin"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Control Bar */}
       <div className="flex items-center justify-between gap-2 border-b border-glass-border/30 bg-card/40 px-4 py-2.5">
@@ -144,18 +230,27 @@ export const ChatScreen = () => {
           </div>
         ) : (
           <>
-        <ChatBubble
-          author="Omar"
-          text={"Hi everyone! 👋\nHow was your weekend?"}
-          time="10:20 AM"
-          reactions={[{ emoji: "❤️", count: 2 }]}
-        />
-        <ChatBubble
-          author="Sara"
-          text={"It was great! I went hiking\nwith my friends 😊"}
-          time="10:21 AM"
-          reactions={[{ emoji: "❤️", count: 1 }]}
-        />
+        {messages.map((m) => (
+          <ChatBubble
+            key={m.id}
+            author={m.author}
+            authorRole={m.authorRole}
+            text={m.text}
+            time={m.time}
+            side={m.side}
+            reactions={m.reactions}
+            highlight={m.highlight}
+            pinned={m.pinned}
+            broadcast={m.broadcast}
+            correction={m.correction}
+            isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
+            onCorrect={() => setCorrecting(m)}
+            onTogglePin={() => setMessages((prev) => prev.map((x) =>
+              x.id === m.id ? { ...x, pinned: !x.pinned } : { ...x, pinned: false }
+            ))}
+            onToggleHighlight={() => updateMsg(m.id, { highlight: !m.highlight })}
+          />
+        ))}
 
         {/* You: Voice */}
         <VoiceBubble duration="0:18" time="10:22 AM" side="right" />
@@ -218,6 +313,43 @@ export const ChatScreen = () => {
 
       {/* Bottom Action chips */}
       <div className="border-t border-glass-border/40 bg-card/60 px-3 pb-2 pt-3 backdrop-blur-xl">
+        {isTeacher && (
+          <div className="mb-2.5 animate-fade-in">
+            {!broadcasting ? (
+              <button
+                onClick={() => setBroadcasting(true)}
+                className="press flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:bg-amber-400/15"
+              >
+                <Megaphone className="h-3.5 w-3.5" /> Broadcast to room
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-2">
+                <Megaphone className="h-4 w-4 shrink-0 text-amber-300" />
+                <input
+                  autoFocus
+                  value={broadcastText}
+                  onChange={(e) => setBroadcastText(e.target.value.slice(0, 240))}
+                  onKeyDown={(e) => { if (e.key === "Enter") sendBroadcast(); }}
+                  placeholder="Announce something to everyone..."
+                  className="flex-1 bg-transparent text-xs text-amber-50 placeholder:text-amber-200/50 focus:outline-none"
+                />
+                <button
+                  onClick={sendBroadcast}
+                  className="press rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-[10px] font-bold text-amber-950"
+                >
+                  Send
+                </button>
+                <button
+                  onClick={() => { setBroadcasting(false); setBroadcastText(""); }}
+                  className="rounded-full p-1 text-amber-200 hover:bg-white/5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mb-2.5 flex items-center justify-between gap-2">
           {[
             { label: "Topic", Icon: Lightbulb, tint: "text-primary-glow", bg: "bg-primary/15" },
@@ -308,6 +440,20 @@ export const ChatScreen = () => {
         </div>
       </div>
     </div>
+    <CorrectionDialog
+      open={!!correcting}
+      original={correcting?.text ?? ""}
+      author={correcting?.author ?? ""}
+      onCancel={() => setCorrecting(null)}
+      onSave={(corrected, note) => {
+        if (!correcting) return;
+        updateMsg(correcting.id, {
+          correction: { original: correcting.text, corrected, note, by: "Ms. Reem" },
+        });
+        setCorrecting(null);
+      }}
+    />
+    </>
   );
 };
 
