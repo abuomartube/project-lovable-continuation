@@ -241,6 +241,22 @@ export const ChatScreen = () => {
         </div>
       </div>
 
+      {/* Suggested prompts strip */}
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-glass-border/30 bg-card/30 px-3 py-2">
+        <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          Try saying
+        </span>
+        {SUGGESTED_PROMPTS.map((p) => (
+          <button
+            key={p}
+            onClick={() => setDraft(p)}
+            className="press shrink-0 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] text-primary-glow hover:bg-primary/15"
+          >
+            “{p}”
+          </button>
+        ))}
+      </div>
+
       {/* Messages */}
       <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
         {loading ? (
