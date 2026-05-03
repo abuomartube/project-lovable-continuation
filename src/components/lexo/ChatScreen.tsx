@@ -1,8 +1,8 @@
-import { ChevronLeft, MoreVertical, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
-import { ChatBubble } from "./ChatBubble";
+import { ChatBubble, type Correction } from "./ChatBubble";
 import { VoiceBubble } from "./VoiceBubble";
 import { IconButton } from "./IconButton";
 import { PushToTalk } from "./PushToTalk";
@@ -10,17 +10,49 @@ import { SpeakingIndicator } from "./SpeakingIndicator";
 import { TypingIndicator } from "./TypingIndicator";
 import { PresenceToasts } from "./PresenceToasts";
 import { RaiseHandButton } from "./RaiseHandButton";
+import { CorrectionDialog } from "./CorrectionDialog";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
+import { useRole } from "@/hooks/useRole";
 import { containsArabic, arabicRatio } from "@/lib/language";
 import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
+
+interface TextMsg {
+  id: string;
+  author: string;
+  authorRole: "student" | "teacher";
+  text: string;
+  time: string;
+  reactions?: { emoji: string; count: number }[];
+  side?: "left" | "right";
+  highlight?: boolean;
+  pinned?: boolean;
+  broadcast?: boolean;
+  correction?: Correction;
+}
+
+const SEED_MESSAGES: TextMsg[] = [
+  { id: "m1", author: "Omar",  authorRole: "student", text: "Hi everyone! 👋\nHow was your weekend?", time: "10:20 AM", reactions: [{ emoji: "❤️", count: 2 }] },
+  { id: "m2", author: "Sara",  authorRole: "student", text: "It was great! I went hiking\nwith my friends 😊", time: "10:21 AM", reactions: [{ emoji: "❤️", count: 1 }] },
+  { id: "m3", author: "Ms. Reem", authorRole: "teacher", text: "Welcome everyone! Let's start with introductions.", time: "10:24 AM" },
+];
 
 export const ChatScreen = () => {
   const [autoDuck, setAutoDuck] = useState(true);
   const [draft, setDraft] = useState("");
   const { award } = useGamification();
+  const { isTeacher, toggle: toggleRole } = useRole();
+  const [messages, setMessages] = useState<TextMsg[]>(SEED_MESSAGES);
+  const [correcting, setCorrecting] = useState<TextMsg | null>(null);
+  const [broadcasting, setBroadcasting] = useState(false);
+  const [broadcastText, setBroadcastText] = useState("");
+
+  const updateMsg = (id: string, patch: Partial<TextMsg>) =>
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+
+  const pinned = messages.find((m) => m.pinned);
   const { level, speakers, pttActive, error, startTalking, stopTalking } = useVoice({
     roomId: "speaking-intermediate",
     identity: { id: "me", name: "You" },
@@ -64,10 +96,35 @@ export const ChatScreen = () => {
       setLangWarning(true);
       return;
     }
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [...prev, {
+      id: `me-${Date.now()}`,
+      author: isTeacher ? "Ms. Reem" : "You",
+      authorRole: isTeacher ? "teacher" : "student",
+      text,
+      time,
+      side: "right",
+    }]);
     award({ type: "message", chars: text.length });
     triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
+  };
+
+  const sendBroadcast = () => {
+    const text = broadcastText.trim();
+    if (!text || !isTeacher) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [...prev, {
+      id: `bc-${Date.now()}`,
+      author: "Ms. Reem",
+      authorRole: "teacher",
+      text,
+      time,
+      broadcast: true,
+    }]);
+    setBroadcastText("");
+    setBroadcasting(false);
   };
 
   const { online, typing, events } = useLivePresence(18);
