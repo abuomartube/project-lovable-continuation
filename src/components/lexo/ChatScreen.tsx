@@ -229,18 +229,27 @@ export const ChatScreen = () => {
           </div>
         ) : (
           <>
-        <ChatBubble
-          author="Omar"
-          text={"Hi everyone! 👋\nHow was your weekend?"}
-          time="10:20 AM"
-          reactions={[{ emoji: "❤️", count: 2 }]}
-        />
-        <ChatBubble
-          author="Sara"
-          text={"It was great! I went hiking\nwith my friends 😊"}
-          time="10:21 AM"
-          reactions={[{ emoji: "❤️", count: 1 }]}
-        />
+        {messages.map((m) => (
+          <ChatBubble
+            key={m.id}
+            author={m.author}
+            authorRole={m.authorRole}
+            text={m.text}
+            time={m.time}
+            side={m.side}
+            reactions={m.reactions}
+            highlight={m.highlight}
+            pinned={m.pinned}
+            broadcast={m.broadcast}
+            correction={m.correction}
+            isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
+            onCorrect={() => setCorrecting(m)}
+            onTogglePin={() => setMessages((prev) => prev.map((x) =>
+              x.id === m.id ? { ...x, pinned: !x.pinned } : { ...x, pinned: false }
+            ))}
+            onToggleHighlight={() => updateMsg(m.id, { highlight: !m.highlight })}
+          />
+        ))}
 
         {/* You: Voice */}
         <VoiceBubble duration="0:18" time="10:22 AM" side="right" />
