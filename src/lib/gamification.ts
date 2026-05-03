@@ -5,7 +5,8 @@ export type XPEvent =
   | { type: "voice-message" }
   | { type: "speak"; seconds: number }
   | { type: "join-room" }
-  | { type: "topic-completed" };
+  | { type: "topic-completed" }
+  | { type: "challenge-completed"; streak?: number };
 
 export const XP_RULES = {
   message: 10,          // per text message
@@ -14,6 +15,8 @@ export const XP_RULES = {
   speakPerSecond: 1,    // 60xp / minute (live speaking)
   joinRoom: 25,
   topicCompleted: 40,
+  challengeCompleted: 50,
+  streakBonusPerDay: 5, // capped 10 days
 } as const;
 
 export const xpForEvent = (e: XPEvent): number => {
@@ -23,6 +26,8 @@ export const xpForEvent = (e: XPEvent): number => {
     case "speak": return Math.round(e.seconds * XP_RULES.speakPerSecond);
     case "join-room": return XP_RULES.joinRoom;
     case "topic-completed": return XP_RULES.topicCompleted;
+    case "challenge-completed":
+      return XP_RULES.challengeCompleted + Math.min(10, e.streak ?? 0) * XP_RULES.streakBonusPerDay;
   }
 };
 
