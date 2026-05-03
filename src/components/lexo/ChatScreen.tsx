@@ -1,5 +1,5 @@
 import { ChevronLeft, MoreVertical, Hand, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "./Avatar";
 import { ChatBubble } from "./ChatBubble";
 import { VoiceBubble } from "./VoiceBubble";
@@ -7,15 +7,40 @@ import { IconButton } from "./IconButton";
 import { PushToTalk } from "./PushToTalk";
 import { SpeakingIndicator } from "./SpeakingIndicator";
 import { useVoice } from "@/hooks/useVoice";
+import { useGamification } from "@/hooks/useGamification";
 import cafeImg from "@/assets/cafe.jpg";
 
 export const ChatScreen = () => {
   const [autoDuck, setAutoDuck] = useState(true);
+  const [draft, setDraft] = useState("");
+  const { award } = useGamification();
   const { level, speakers, pttActive, error, startTalking, stopTalking } = useVoice({
     roomId: "speaking-intermediate",
     identity: { id: "me", name: "You" },
     autoDuckOthers: autoDuck,
   });
+
+  // Award XP on room join (mount once)
+  const joined = useRef(false);
+  useEffect(() => { if (!joined.current) { joined.current = true; award({ type: "join-room" }); } }, [award]);
+
+  // Award XP for time held on PTT
+  const pttStartRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (pttActive) pttStartRef.current = performance.now();
+    else if (pttStartRef.current != null) {
+      const seconds = Math.round((performance.now() - pttStartRef.current) / 1000);
+      pttStartRef.current = null;
+      if (seconds > 0) award({ type: "speak", seconds });
+    }
+  }, [pttActive, award]);
+
+  const sendMessage = () => {
+    const text = draft.trim();
+    if (!text) return;
+    award({ type: "message", chars: text.length });
+    setDraft("");
+  };
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -166,12 +191,15 @@ export const ChatScreen = () => {
           </button>
           <div className="flex h-11 flex-1 items-center gap-2 rounded-full border border-glass-border/40 bg-secondary/50 px-4">
             <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
               placeholder="Type a message..."
               className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow">
+          <button onClick={sendMessage} className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow transition-all hover:brightness-110 active:scale-95">
             <Send className="h-4 w-4" />
           </button>
         </div>

@@ -1,9 +1,13 @@
 import { ChevronLeft, Sparkles, ArrowRight, History } from "lucide-react";
 import { IconButton } from "./IconButton";
 import { useTopicDeck } from "@/hooks/useTopicDeck";
+import { useGamification } from "@/hooks/useGamification";
 
 export const TopicGeneratorScreen = () => {
   const { category, categories, current, history, next, surprise, setCategory } = useTopicDeck("All");
+  const { award } = useGamification();
+  const handleNext = () => { award({ type: "topic-completed" }); next(); };
+  const handleSurprise = () => { award({ type: "topic-completed" }); surprise(); };
   const Icon = current.icon;
 
   return (
@@ -69,13 +73,13 @@ export const TopicGeneratorScreen = () => {
       <div className="border-t border-glass-border/40 bg-card/60 px-3 py-3 backdrop-blur-xl">
         <div className="flex gap-2">
           <button
-            onClick={next}
+            onClick={handleNext}
             className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-glass-border/40 bg-secondary/50 text-sm font-semibold text-foreground transition-all hover:bg-secondary active:scale-[0.98]"
           >
             Next topic <ArrowRight className="h-4 w-4" />
           </button>
           <button
-            onClick={surprise}
+            onClick={handleSurprise}
             className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition-all hover:brightness-110 active:scale-[0.96]"
           >
             <Sparkles className="h-4 w-4" /> Surprise me
