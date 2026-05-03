@@ -4,6 +4,30 @@ import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHori
 import { useState } from "react";
 import type { SentenceAnalysis } from "@/hooks/useSentenceAnalysis";
 
+// Highlight mistake spans inside the original text
+function renderHighlighted(text: string, mistakes: { wrong: string }[]) {
+  if (!mistakes?.length) return text;
+  const escaped = mistakes
+    .map((m) => m.wrong)
+    .filter(Boolean)
+    .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!escaped.length) return text;
+  const re = new RegExp(`(${escaped.join("|")})`, "gi");
+  const parts = text.split(re);
+  return parts.map((p, i) =>
+    re.test(p) ? (
+      <mark
+        key={i}
+        className="rounded bg-rose-400/20 px-0.5 text-rose-100 underline decoration-rose-400/70 decoration-wavy underline-offset-2"
+      >
+        {p}
+      </mark>
+    ) : (
+      <span key={i}>{p}</span>
+    )
+  );
+}
+
 export interface Correction {
   original: string;
   corrected: string;
