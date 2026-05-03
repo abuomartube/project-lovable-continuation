@@ -11,6 +11,7 @@ import { ProfileScreen } from "@/components/lexo/ProfileScreen";
 import { LeaderboardScreen } from "@/components/lexo/LeaderboardScreen";
 import { SettingsScreen } from "@/components/lexo/SettingsScreen";
 import { CourseSelectionScreen } from "@/components/lexo/CourseSelectionScreen";
+import { useLivePresence } from "@/hooks/useLivePresence";
 
 const NAV = [
   { id: "rooms", label: "Rooms", Icon: MessageCircle },
@@ -29,6 +30,7 @@ const Panel = ({ children, className = "" }: { children: ReactNode; className?: 
 
 const Index = () => {
   const [active, setActive] = useState<NavId>("rooms");
+  const { online } = useLivePresence(24);
 
   const renderCenterTop = () => {
     switch (active) {
@@ -103,21 +105,21 @@ const Index = () => {
 
         {/* CENTER */}
         <main className="flex min-w-0 flex-1 flex-col gap-4">
-          <header className="glass flex items-center justify-between px-5 py-3">
+          <header className="glass flex animate-fade-in items-center justify-between px-5 py-3">
             <div className="flex items-center gap-2 text-sm">
               <Compass className="h-4 w-4 text-primary-glow" />
               <span className="font-semibold capitalize">{active}</span>
               <span className="text-muted-foreground">/ Speaking Room – Intermediate</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="flex h-2 w-2 rounded-full bg-success shadow-[0_0_10px_hsl(var(--success))]" />
-              18 online
+              <span className="flex h-2 w-2 rounded-full bg-success shadow-[0_0_10px_hsl(var(--success))] animate-soft-pulse" />
+              <span key={online} className="inline-block animate-fade-in tabular-nums">{online}</span> online
             </div>
           </header>
 
           <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4">
             <Panel className="min-h-0">
-              <div className="h-full overflow-y-auto">{renderCenterTop()}</div>
+              <div key={active} className="h-full animate-fade-in overflow-y-auto">{renderCenterTop()}</div>
             </Panel>
             <Panel className="min-h-0">
               <div className="h-full">
@@ -128,7 +130,7 @@ const Index = () => {
         </main>
 
         {/* RIGHT PANEL */}
-        <aside className="hidden w-[340px] shrink-0 flex-col gap-4 xl:flex">
+        <aside className="hidden w-[340px] shrink-0 flex-col gap-4 xl:flex animate-slide-in-right">
           <Panel className="min-h-0 flex-1">
             <div className="h-full overflow-y-auto">
               <RoomDetailsScreen />
@@ -139,7 +141,9 @@ const Index = () => {
             <div className="mb-3 flex items-center gap-2">
               <Users className="h-4 w-4 text-primary-glow" />
               <h3 className="text-sm font-bold">Participants</h3>
-              <span className="ml-auto text-[10px] text-muted-foreground">24 online</span>
+              <span className="ml-auto text-[10px] text-muted-foreground">
+                <span key={online} className="inline-block animate-fade-in tabular-nums">{online}</span> online
+              </span>
             </div>
             <div className="flex -space-x-2">
               {["A", "M", "S", "K", "R", "L", "N"].map((c, i) => (
