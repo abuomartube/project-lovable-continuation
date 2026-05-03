@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
-import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2, Star, Trophy } from "lucide-react";
+import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2, Star, Trophy, Mic2 } from "lucide-react";
 import { useState } from "react";
 import type { SentenceAnalysis } from "@/hooks/useSentenceAnalysis";
 
@@ -55,6 +55,8 @@ interface ChatBubbleProps {
   onApplyImproved?: (improved: string) => void;
   // Teacher controls (only rendered when isTeacherViewer + author is student)
   isTeacherViewer?: boolean;
+  isSpeaker?: boolean;        // user has sent voice notes
+  onVoiceReply?: () => void;  // student-side quick voice reply
   onTogglePin?: () => void;
   onToggleHighlight?: () => void;
   onToggleBest?: () => void;
@@ -76,7 +78,7 @@ export const ChatBubble = ({
   author, text, time, side = "left", reactions, avatarSrc,
   authorRole = "student", highlight, pinned, broadcast, bestMessage, correction,
   learning, learningLoading, onApplyImproved,
-  isTeacherViewer, onTogglePin, onToggleHighlight, onToggleBest, onCorrect,
+  isTeacherViewer, isSpeaker, onVoiceReply, onTogglePin, onToggleHighlight, onToggleBest, onCorrect,
 }: ChatBubbleProps) => {
   const isMe = side === "right";
   const [hover, setHover] = useState(false);
@@ -120,6 +122,14 @@ export const ChatBubble = ({
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-muted-foreground">{author}</span>
             <RoleBadge role={authorRole} />
+            {isSpeaker && (
+              <span
+                title="Active speaker"
+                className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold text-primary-glow ring-1 ring-primary/30"
+              >
+                <Mic2 className="h-2.5 w-2.5" /> Speaker
+              </span>
+            )}
             {pinned && (
               <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold text-primary-glow">
                 <Pin className="h-2.5 w-2.5" /> Pinned
@@ -187,6 +197,16 @@ export const ChatBubble = ({
             </div>
           )}
         </div>
+
+        {/* Voice reply quick action (only for incoming non-teacher messages) */}
+        {!isMe && onVoiceReply && (
+          <button
+            onClick={onVoiceReply}
+            className="press mt-1 inline-flex items-center gap-1 self-start rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary-glow hover:bg-primary/20"
+          >
+            <Mic2 className="h-2.5 w-2.5" /> Voice reply
+          </button>
+        )}
 
         {/* Correction panel */}
         {correction && (
