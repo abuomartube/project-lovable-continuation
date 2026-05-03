@@ -273,12 +273,22 @@ export const ChatScreen = () => {
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
           </div>
-          <button
-            onClick={sendMessage}
-            className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
-          >
-            <Send className="h-4 w-4" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={sendMessage}
+              className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+            {xpBurst && (
+              <span
+                key={xpBurst.id}
+                className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 animate-xp-burst rounded-full bg-gradient-primary px-2 py-0.5 text-[10px] font-bold text-white shadow-glow"
+              >
+                +{xpBurst.amount} XP
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-3">
