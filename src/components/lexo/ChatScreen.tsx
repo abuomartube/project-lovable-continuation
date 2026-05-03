@@ -1,4 +1,4 @@
-import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle, Wand2, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
@@ -15,6 +15,7 @@ import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
 import { useRole } from "@/hooks/useRole";
+import { useSentenceAnalysis, type SentenceAnalysis } from "@/hooks/useSentenceAnalysis";
 import { containsArabic, arabicRatio } from "@/lib/language";
 import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
@@ -50,6 +51,10 @@ export const ChatScreen = () => {
   const [correcting, setCorrecting] = useState<TextMsg | null>(null);
   const [broadcasting, setBroadcasting] = useState(false);
   const [broadcastText, setBroadcastText] = useState("");
+  const { analyze, loading: analyzing } = useSentenceAnalysis();
+  const [analyses, setAnalyses] = useState<Record<string, SentenceAnalysis | null>>({});
+  const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
+  const [improvingDraft, setImprovingDraft] = useState(false);
 
   const updateMsg = (id: string, patch: Partial<TextMsg>) =>
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -119,18 +124,37 @@ export const ChatScreen = () => {
       return;
     }
     const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const id = `me-${Date.now()}`;
     setMessages((prev) => [...prev, {
-      id: `me-${Date.now()}`,
+      id,
       author: isTeacher ? "Ms. Reem" : "You",
       authorRole: isTeacher ? "teacher" : "student",
       text,
       time,
       side: "right",
     }]);
+    // Smart learning: analyze student's own message
+    if (!isTeacher) {
+      setAnalyzingIds((p) => ({ ...p, [id]: true }));
+      analyze(text).then((res) => {
+        setAnalyses((p) => ({ ...p, [id]: res }));
+        setAnalyzingIds((p) => ({ ...p, [id]: false }));
+      });
+    }
     award({ type: "message", chars: text.length });
     triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
+  };
+
+  const improveDraft = async () => {
+    const text = draft.trim();
+    if (!text || improvingDraft) return;
+    setImprovingDraft(true);
+    const res = await analyze(text);
+    if (res?.improved) setDraft(res.improved);
+    else if (res?.corrected) setDraft(res.corrected);
+    setImprovingDraft(false);
   };
 
   const sendBroadcast = () => {
@@ -281,6 +305,9 @@ export const ChatScreen = () => {
             pinned={m.pinned}
             broadcast={m.broadcast}
             correction={m.correction}
+            learning={analyses[m.id] ?? null}
+            learningLoading={!!analyzingIds[m.id]}
+            onApplyImproved={(improved) => updateMsg(m.id, { text: improved })}
             isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
             onCorrect={() => setCorrecting(m)}
             onTogglePin={() => setMessages((prev) => prev.map((x) =>
