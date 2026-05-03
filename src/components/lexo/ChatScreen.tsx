@@ -485,6 +485,21 @@ export const ChatScreen = () => {
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
           </div>
+          {draft.trim().length > 0 && !isTeacher && (
+            <button
+              onClick={improveDraft}
+              disabled={improvingDraft}
+              title="Improve sentence with AI"
+              className="press flex h-10 items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 text-[11px] font-semibold text-primary-glow hover:bg-primary/20 disabled:opacity-60"
+            >
+              {improvingDraft ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Wand2 className="h-3.5 w-3.5" />
+              )}
+              Improve
+            </button>
+          )}
           <div className="relative">
             <button
               onClick={sendMessage}
