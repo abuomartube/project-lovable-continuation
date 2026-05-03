@@ -75,14 +75,25 @@ export const ChatScreen = () => {
     seededTopic.current = true;
     const topic = pickDailyTopic();
     const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    // Daily teacher greeting (pinned) + voice note. Deterministic per day.
+    const dayIndex = Math.floor(Date.now() / 86_400_000);
+    const seed = (dayIndex * 9301 + 49297) % 233280;
     setMessages((prev) => [
       {
-        id: "system-daily-topic",
-        author: "Room",
+        id: "teacher-daily-text",
+        author: "Ms. Reem",
         authorRole: "teacher",
-        text: `Today's topic: ${topic.text}`,
+        text: `👋 Good morning! Today's topic is "${topic.text}". Take a few minutes to think, then share your answer with the room — I'm here if you need help.`,
         time,
-        broadcast: true,
+        pinned: true,
+      },
+      {
+        id: "teacher-daily-voice",
+        author: "Ms. Reem",
+        authorRole: "teacher",
+        text: "",
+        time,
+        voiceNote: { duration: 22 + (dayIndex % 12), seed },
       },
       ...prev,
     ]);
