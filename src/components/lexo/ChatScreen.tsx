@@ -1,4 +1,4 @@
-import { ChevronLeft, MoreVertical, Hand, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
+import { ChevronLeft, MoreVertical, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "./Avatar";
 import { ChatBubble } from "./ChatBubble";
@@ -8,6 +8,7 @@ import { PushToTalk } from "./PushToTalk";
 import { SpeakingIndicator } from "./SpeakingIndicator";
 import { TypingIndicator } from "./TypingIndicator";
 import { PresenceToasts } from "./PresenceToasts";
+import { RaiseHandButton } from "./RaiseHandButton";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
@@ -95,9 +96,7 @@ export const ChatScreen = () => {
           >
             {autoDuck ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
           </button>
-          <button className="flex items-center gap-1.5 rounded-full border border-glass-border/40 bg-secondary/60 px-3 py-1.5 text-[10px] text-foreground hover:bg-secondary">
-            <Hand className="h-3 w-3" /> رفع اليد
-          </button>
+          <RaiseHandButton variant="pill" label="Raise Hand" raisedCount={1} />
         </div>
       </div>
 

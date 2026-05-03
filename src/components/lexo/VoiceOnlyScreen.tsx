@@ -1,6 +1,7 @@
-import { ChevronLeft, Mic, Hand, MessageSquare, LogOut } from "lucide-react";
+import { ChevronLeft, Mic, MessageSquare, LogOut } from "lucide-react";
 import { IconButton } from "./IconButton";
 import { Avatar } from "./Avatar";
+import { RaiseHandButton } from "./RaiseHandButton";
 
 export const VoiceOnlyScreen = () => {
   const listeners = ["Sara", "Omar", "Lina", "James"];
@@ -44,9 +45,7 @@ export const VoiceOnlyScreen = () => {
       </div>
 
       <div className="flex items-center justify-between gap-2 border-t border-glass-border/40 bg-card/60 px-3 py-3 backdrop-blur-xl">
-        <button className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-glass-border/40 bg-secondary/50 px-3 py-2 text-xs text-foreground hover:bg-secondary">
-          <Hand className="h-3.5 w-3.5" /> Raise Hand
-        </button>
+        <RaiseHandButton raisedCount={2} />
         <button className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-glass-border/40 bg-secondary/50 px-3 py-2 text-xs text-foreground hover:bg-secondary">
           <MessageSquare className="h-3.5 w-3.5" /> Message
         </button>
