@@ -26,11 +26,12 @@ export const useLivePresence = (initialOnline = 18): LivePresence => {
 
   useEffect(() => {
     const presenceTimer = window.setInterval(() => {
-      const join = Math.random() > 0.45;
+      const join: boolean = Math.random() > 0.45;
       const name = NAMES[Math.floor(Math.random() * NAMES.length)];
       setOnline((n) => Math.max(5, Math.min(99, n + (join ? 1 : -1))));
       const id = ++counter.current;
-      setEvents((prev) => [{ id, type: join ? "join" : "leave", name }, ...prev].slice(0, 4));
+      const ev: PresenceEvent = { id, type: join ? "join" : "leave", name };
+      setEvents((prev) => [ev, ...prev].slice(0, 4));
     }, 5200);
 
     const typingTimer = window.setInterval(() => {
