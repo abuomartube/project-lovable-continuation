@@ -309,6 +309,7 @@ export const ChatScreen = () => {
         onStart={(challenge) => {
           setDraft(`My answer to today's challenge — "${challenge}"\n\n`);
         }}
+        onQuickReply={(starter) => setDraft((d) => (d ? d + " " + starter : starter))}
       />
 
       {/* Social activity around today's challenge */}
