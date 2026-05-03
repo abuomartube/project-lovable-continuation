@@ -16,6 +16,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const MAX_LEN = 2000;
+    if (text.length > MAX_LEN) {
+      return new Response(
+        JSON.stringify({ error: `Text must be at most ${MAX_LEN} characters` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
