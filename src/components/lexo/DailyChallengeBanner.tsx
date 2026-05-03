@@ -30,12 +30,7 @@ const QUICK_REPLIES = [
   "My favorite...",
 ];
 
-export const DailyChallengeBanner = ({ onStart }: Props) => {
-  // (props destructured below for backward compat)
-  return <DailyChallengeBannerInner onStart={onStart} />;
-};
-
-const DailyChallengeBannerInner = ({ onStart, onQuickReply }: Props) => {
+export const DailyChallengeBanner = ({ onStart, onQuickReply }: Props) => {
   const dayIndex = useMemo(() => getDayIndex(), []);
   const challenge = useMemo(() => pickChallengeForDay(dayIndex), [dayIndex]);
   const { completed, streak, bestStreak, complete } = useDailyChallenge();
