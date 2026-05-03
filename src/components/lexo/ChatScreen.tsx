@@ -1,11 +1,21 @@
-import { ChevronLeft, MoreVertical, Hand, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, MoreVertical, Hand, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
+import { useState } from "react";
 import { Avatar } from "./Avatar";
 import { ChatBubble } from "./ChatBubble";
 import { VoiceBubble } from "./VoiceBubble";
 import { IconButton } from "./IconButton";
+import { PushToTalk } from "./PushToTalk";
+import { SpeakingIndicator } from "./SpeakingIndicator";
+import { useVoice } from "@/hooks/useVoice";
 import cafeImg from "@/assets/cafe.jpg";
 
 export const ChatScreen = () => {
+  const [autoDuck, setAutoDuck] = useState(true);
+  const { level, speakers, pttActive, error, startTalking, stopTalking } = useVoice({
+    roomId: "speaking-intermediate",
+    identity: { id: "me", name: "You" },
+    autoDuckOthers: autoDuck,
+  });
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -35,17 +45,27 @@ export const ChatScreen = () => {
       </div>
 
       {/* Control Bar */}
-      <div className="flex items-center justify-between border-b border-glass-border/30 bg-card/40 px-4 py-2.5">
+      <div className="flex items-center justify-between gap-2 border-b border-glass-border/30 bg-card/40 px-4 py-2.5">
         <span className="flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-1 text-[10px] font-semibold text-success">
           <span className="rounded-md bg-success/20 px-1 py-0.5 text-[9px]">EN</span>
           English Only
         </span>
-        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow">
-          <Mic className="h-4 w-4" />
-        </button>
-        <button className="flex items-center gap-1.5 rounded-full border border-glass-border/40 bg-secondary/60 px-3 py-1.5 text-[10px] text-foreground hover:bg-secondary">
-          <Hand className="h-3 w-3" /> رفع اليد
-        </button>
+        <SpeakingIndicator speakers={speakers} />
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setAutoDuck((v) => !v)}
+            title="Auto-mute others while you speak"
+            className={
+              "flex h-8 w-8 items-center justify-center rounded-full border border-glass-border/40 transition-colors " +
+              (autoDuck ? "bg-primary/20 text-primary-glow" : "bg-secondary/60 text-muted-foreground")
+            }
+          >
+            {autoDuck ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+          </button>
+          <button className="flex items-center gap-1.5 rounded-full border border-glass-border/40 bg-secondary/60 px-3 py-1.5 text-[10px] text-foreground hover:bg-secondary">
+            <Hand className="h-3 w-3" /> رفع اليد
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -156,32 +176,14 @@ export const ChatScreen = () => {
           </button>
         </div>
 
-        {/* Floating mic */}
-        <div className="mt-3 flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: 14 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="w-0.5 rounded-full bg-primary/50"
-                  style={{ height: `${4 + Math.abs(Math.sin(i * 0.7)) * 14}px` }}
-                />
-              ))}
-            </div>
-            <button className="animate-mic-pulse flex h-16 w-16 items-center justify-center rounded-full bg-gradient-mic shadow-mic ring-4 ring-primary/20">
-              <Mic className="h-7 w-7 text-white" />
-            </button>
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: 14 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="w-0.5 rounded-full bg-primary/50"
-                  style={{ height: `${4 + Math.abs(Math.cos(i * 0.7)) * 14}px` }}
-                />
-              ))}
-            </div>
-          </div>
-          <span className="text-[10px] font-medium text-muted-foreground">Tap to speak</span>
+        <div className="mt-3">
+          <PushToTalk
+            level={level}
+            active={pttActive}
+            onStart={startTalking}
+            onStop={stopTalking}
+            error={error}
+          />
         </div>
       </div>
     </div>
