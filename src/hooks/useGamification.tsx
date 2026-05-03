@@ -60,6 +60,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
         speak: "Speaking",
         "join-room": "Joined room",
         "topic-completed": "Topic completed",
+        "challenge-completed": "Daily challenge",
       };
       const events: AwardEvent[] = [{ id, delta, reason: reason[e.type] }];
       newlyUnlocked.forEach((b) => events.push({ id: ++counter.current, delta: 0, reason: "Badge unlocked", badge: b }));
