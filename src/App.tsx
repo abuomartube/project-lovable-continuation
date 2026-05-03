@@ -7,8 +7,11 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { GamificationProvider } from "@/hooks/useGamification";
 import { XPToasts } from "@/components/lexo/XPToasts";
+import { useDailyStreakPing } from "@/hooks/useStreak";
 
 const queryClient = new QueryClient();
+
+const StreakBootstrap = () => { useDailyStreakPing(); return null; };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -17,6 +20,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <XPToasts />
+        <StreakBootstrap />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
