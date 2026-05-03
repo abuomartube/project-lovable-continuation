@@ -1,4 +1,4 @@
-import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
@@ -18,6 +18,8 @@ import { useRole } from "@/hooks/useRole";
 import { containsArabic, arabicRatio } from "@/lib/language";
 import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
+import { SUGGESTED_PROMPTS, ICE_BREAKERS, QUESTIONS, pickDailyTopic } from "@/lib/prompts";
+import { pickRandom, TOPICS } from "@/lib/topics";
 
 interface TextMsg {
   id: string;
@@ -53,6 +55,26 @@ export const ChatScreen = () => {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
   const pinned = messages.find((m) => m.pinned);
+
+  // Auto-post today's topic as a system message when the room opens
+  const seededTopic = useRef(false);
+  useEffect(() => {
+    if (seededTopic.current) return;
+    seededTopic.current = true;
+    const topic = pickDailyTopic();
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [
+      {
+        id: "system-daily-topic",
+        author: "Room",
+        authorRole: "teacher",
+        text: `Today's topic: ${topic.text}`,
+        time,
+        broadcast: true,
+      },
+      ...prev,
+    ]);
+  }, []);
   const { level, speakers, pttActive, error, startTalking, stopTalking } = useVoice({
     roomId: "speaking-intermediate",
     identity: { id: "me", name: "You" },
@@ -219,6 +241,22 @@ export const ChatScreen = () => {
         </div>
       </div>
 
+      {/* Suggested prompts strip */}
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-glass-border/30 bg-card/30 px-3 py-2">
+        <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          Try saying
+        </span>
+        {SUGGESTED_PROMPTS.map((p) => (
+          <button
+            key={p}
+            onClick={() => setDraft(p)}
+            className="press shrink-0 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] text-primary-glow hover:bg-primary/15"
+          >
+            “{p}”
+          </button>
+        ))}
+      </div>
+
       {/* Messages */}
       <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
         {loading ? (
@@ -352,13 +390,22 @@ export const ChatScreen = () => {
 
         <div className="mb-2.5 flex items-center justify-between gap-2">
           {[
-            { label: "Topic", Icon: Lightbulb, tint: "text-primary-glow", bg: "bg-primary/15" },
-            { label: "Ice Breaker", Icon: Snowflake, tint: "text-cyan-400", bg: "bg-cyan-400/15" },
-            { label: "Rotate", Icon: RotateCw, tint: "text-emerald-400", bg: "bg-emerald-400/15" },
-            { label: "Image Talk", Icon: ImageIcon, tint: "text-pink-400", bg: "bg-pink-400/15" },
-          ].map(({ label, Icon, tint, bg }) => (
+            {
+              label: "Topic", Icon: Lightbulb, tint: "text-primary-glow", bg: "bg-primary/15",
+              onClick: () => setDraft(pickRandom(TOPICS).text),
+            },
+            {
+              label: "Ice Breaker", Icon: Snowflake, tint: "text-cyan-400", bg: "bg-cyan-400/15",
+              onClick: () => setDraft(pickRandom(ICE_BREAKERS)),
+            },
+            {
+              label: "Question", Icon: HelpCircle, tint: "text-emerald-400", bg: "bg-emerald-400/15",
+              onClick: () => setDraft(pickRandom(QUESTIONS)),
+            },
+          ].map(({ label, Icon, tint, bg, onClick }) => (
             <button
               key={label}
+              onClick={onClick}
               className="press flex flex-1 flex-col items-center gap-1 rounded-2xl border border-glass-border/40 bg-secondary/30 px-2 py-2 text-[10px] text-muted-foreground hover:bg-secondary/60 hover:-translate-y-0.5 hover:border-primary/30"
             >
               <span className={`flex h-7 w-7 items-center justify-center rounded-full ${bg} ${tint}`}>
