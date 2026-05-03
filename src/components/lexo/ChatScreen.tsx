@@ -390,13 +390,22 @@ export const ChatScreen = () => {
 
         <div className="mb-2.5 flex items-center justify-between gap-2">
           {[
-            { label: "Topic", Icon: Lightbulb, tint: "text-primary-glow", bg: "bg-primary/15" },
-            { label: "Ice Breaker", Icon: Snowflake, tint: "text-cyan-400", bg: "bg-cyan-400/15" },
-            { label: "Rotate", Icon: RotateCw, tint: "text-emerald-400", bg: "bg-emerald-400/15" },
-            { label: "Image Talk", Icon: ImageIcon, tint: "text-pink-400", bg: "bg-pink-400/15" },
-          ].map(({ label, Icon, tint, bg }) => (
+            {
+              label: "Topic", Icon: Lightbulb, tint: "text-primary-glow", bg: "bg-primary/15",
+              onClick: () => setDraft(pickRandom(TOPICS).text),
+            },
+            {
+              label: "Ice Breaker", Icon: Snowflake, tint: "text-cyan-400", bg: "bg-cyan-400/15",
+              onClick: () => setDraft(pickRandom(ICE_BREAKERS)),
+            },
+            {
+              label: "Question", Icon: HelpCircle, tint: "text-emerald-400", bg: "bg-emerald-400/15",
+              onClick: () => setDraft(pickRandom(QUESTIONS)),
+            },
+          ].map(({ label, Icon, tint, bg, onClick }) => (
             <button
               key={label}
+              onClick={onClick}
               className="press flex flex-1 flex-col items-center gap-1 rounded-2xl border border-glass-border/40 bg-secondary/30 px-2 py-2 text-[10px] text-muted-foreground hover:bg-secondary/60 hover:-translate-y-0.5 hover:border-primary/30"
             >
               <span className={`flex h-7 w-7 items-center justify-center rounded-full ${bg} ${tint}`}>
