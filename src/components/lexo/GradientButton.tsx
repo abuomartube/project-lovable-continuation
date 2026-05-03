@@ -18,7 +18,7 @@ export const GradientButton = forwardRef<HTMLButtonElement, GradientButtonProps>
         className={cn(
           "relative inline-flex items-center justify-center gap-2 rounded-2xl font-semibold text-primary-foreground",
           "bg-gradient-primary shadow-glow transition-all duration-300",
-          "hover:scale-[1.02] active:scale-[0.98]",
+          "hover:brightness-110 active:scale-[0.96]",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "disabled:pointer-events-none disabled:opacity-50",
           sizes[size],
