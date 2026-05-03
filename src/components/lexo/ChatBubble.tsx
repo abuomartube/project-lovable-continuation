@@ -19,10 +19,8 @@ export const ChatBubble = ({ author, text, time, side = "left", reactions, avata
         {!isMe && <span className="text-xs font-medium text-muted-foreground">{author}</span>}
         <div
           className={cn(
-            "whitespace-pre-line rounded-2xl px-3.5 py-2.5 text-sm shadow-card",
-            isMe
-              ? "rounded-br-md bg-gradient-primary text-primary-foreground"
-              : "rounded-tl-md border border-glass-border/40 bg-secondary/70 text-foreground",
+            "whitespace-pre-line rounded-[20px] px-3.5 py-2.5 text-sm transition-all",
+            isMe ? "rounded-br-md bubble-out" : "rounded-tl-md bubble-in",
           )}
         >
           {text}
