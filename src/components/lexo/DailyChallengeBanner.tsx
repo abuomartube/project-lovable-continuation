@@ -1,23 +1,10 @@
-import { Target, Clock, Sparkles } from "lucide-react";
+import { Target, Clock, Sparkles, CheckCircle2, Flame } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DAILY_CHALLENGES } from "@/lib/challenges";
-
-const STORAGE_KEY = "lexo:daily-challenge";
+import { useDailyChallenge, getDayIndex, msUntilNextDay } from "@/hooks/useDailyChallenge";
 
 function pickChallengeForDay(dayIndex: number) {
   return DAILY_CHALLENGES[dayIndex % DAILY_CHALLENGES.length];
-}
-
-function getDayIndex(d = new Date()) {
-  // Days since epoch in user's local timezone
-  return Math.floor((d.getTime() - d.getTimezoneOffset() * 60_000) / 86_400_000);
-}
-
-function msUntilNextDay() {
-  const now = new Date();
-  const next = new Date(now);
-  next.setHours(24, 0, 0, 0);
-  return next.getTime() - now.getTime();
 }
 
 function formatCountdown(ms: number) {
@@ -37,22 +24,8 @@ interface Props {
 export const DailyChallengeBanner = ({ onStart }: Props) => {
   const dayIndex = useMemo(() => getDayIndex(), []);
   const challenge = useMemo(() => pickChallengeForDay(dayIndex), [dayIndex]);
-  const [completed, setCompleted] = useState(false);
+  const { completed, streak, bestStreak, complete } = useDailyChallenge();
   const [countdown, setCountdown] = useState(msUntilNextDay());
-
-  // Load completion state, reset if it's a new day
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { dayIndex: number; completed: boolean };
-        if (parsed.dayIndex === dayIndex) setCompleted(parsed.completed);
-        else localStorage.setItem(STORAGE_KEY, JSON.stringify({ dayIndex, completed: false }));
-      } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ dayIndex, completed: false }));
-      }
-    } catch {}
-  }, [dayIndex]);
 
   // Tick countdown every second
   useEffect(() => {
@@ -62,10 +35,7 @@ export const DailyChallengeBanner = ({ onStart }: Props) => {
 
   const handleStart = () => {
     onStart(challenge);
-    setCompleted(true);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ dayIndex, completed: true }));
-    } catch {}
+    complete();
   };
 
   return (
@@ -81,6 +51,14 @@ export const DailyChallengeBanner = ({ onStart }: Props) => {
               <span className="text-[9px] font-bold uppercase tracking-wider text-primary-glow">
                 Today's Challenge
               </span>
+              {streak > 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full bg-orange-400/15 px-1.5 py-0.5 text-[9px] font-bold text-orange-300"
+                  title={`Best streak: ${bestStreak} days`}
+                >
+                  <Flame className="h-2.5 w-2.5" /> Day {streak}
+                </span>
+              )}
               <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-secondary/60 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-muted-foreground">
                 <Clock className="h-2.5 w-2.5" /> {formatCountdown(countdown)}
               </span>
@@ -88,13 +66,24 @@ export const DailyChallengeBanner = ({ onStart }: Props) => {
             <p className="mt-0.5 truncate text-[12px] font-semibold text-foreground">
               {challenge}
             </p>
+            {completed && (
+              <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300">
+                <CheckCircle2 className="h-3 w-3" />
+                You completed today's challenge
+              </p>
+            )}
           </div>
           <button
             onClick={handleStart}
             disabled={completed}
-            className="press shrink-0 inline-flex items-center gap-1 rounded-full bg-gradient-primary px-3 py-1.5 text-[11px] font-semibold text-white shadow-glow disabled:opacity-60"
+            className={
+              "press shrink-0 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold shadow-glow disabled:cursor-default " +
+              (completed
+                ? "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/40"
+                : "bg-gradient-primary text-white")
+            }
           >
-            <Sparkles className="h-3 w-3" />
+            {completed ? <CheckCircle2 className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
             {completed ? "Done" : "Start Answer"}
           </button>
         </div>
