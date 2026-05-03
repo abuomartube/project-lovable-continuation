@@ -43,8 +43,9 @@ const Index = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-app-dark text-foreground">
       <div className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-app-dark" />
         <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/15 blur-[160px]" />
         <div className="absolute top-1/3 right-0 h-[600px] w-[600px] rounded-full bg-accent/15 blur-[180px]" />
         <div className="absolute bottom-0 left-1/3 h-[450px] w-[450px] rounded-full bg-primary-glow/10 blur-[160px]" />
