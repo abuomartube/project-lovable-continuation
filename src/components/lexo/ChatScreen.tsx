@@ -62,11 +62,18 @@ export const ChatScreen = () => {
   const [analyses, setAnalyses] = useState<Record<string, SentenceAnalysis | null>>({});
   const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({});
   const [improvingDraft, setImprovingDraft] = useState(false);
+  const [voiceNudge, setVoiceNudge] = useState(false);
+  const voiceNudgeTimer = useRef<number | null>(null);
 
   const updateMsg = (id: string, patch: Partial<TextMsg>) =>
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
   const pinned = messages.find((m) => m.pinned);
+
+  // Authors who have sent at least one voice note → "Speaker" badge
+  const speakerAuthors = new Set(messages.filter((m) => m.voiceNote).map((m) => m.author));
+  // Seed a couple so badges feel alive
+  ["Sara", "Ms. Reem"].forEach((n) => speakerAuthors.add(n));
 
   // Auto-post today's topic as a system message when the room opens
   const seededTopic = useRef(false);
@@ -163,6 +170,10 @@ export const ChatScreen = () => {
     triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
+    // Encourage speaking after typing
+    setVoiceNudge(true);
+    if (voiceNudgeTimer.current) window.clearTimeout(voiceNudgeTimer.current);
+    voiceNudgeTimer.current = window.setTimeout(() => setVoiceNudge(false), 5000);
   };
 
   const improveDraft = async () => {
@@ -312,6 +323,16 @@ export const ChatScreen = () => {
         onQuickReply={(starter) => setDraft((d) => (d ? d + " " + starter : starter))}
       />
 
+      {/* Voice-first nudge under daily challenge */}
+      <div className="flex items-center gap-2 border-b border-glass-border/30 bg-card/30 px-3 py-2">
+        <button
+          onClick={() => startTalking()}
+          className="press flex flex-1 items-center justify-center gap-2 rounded-full border border-primary/40 bg-gradient-to-r from-primary/20 to-primary-glow/20 px-3 py-1.5 text-[11px] font-bold text-primary-glow shadow-[0_0_18px_hsl(250_80%_60%/0.3)]"
+        >
+          <Mic2 className="h-3.5 w-3.5" /> Answer using voice 🎙️
+        </button>
+      </div>
+
       {/* Social activity around today's challenge */}
       <SocialActivity />
 
@@ -428,6 +449,8 @@ export const ChatScreen = () => {
               learningLoading={!!analyzingIds[m.id]}
               onApplyImproved={(improved) => updateMsg(m.id, { text: improved })}
               isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
+              isSpeaker={speakerAuthors.has(m.author)}
+              onVoiceReply={!isTeacher ? () => startTalking() : undefined}
               onCorrect={() => setCorrecting(m)}
               onTogglePin={() => setMessages((prev) => prev.map((x) =>
                 x.id === m.id ? { ...x, pinned: !x.pinned } : { ...x, pinned: false }
@@ -599,13 +622,29 @@ export const ChatScreen = () => {
             </button>
           </div>
         )}
+
+        {voiceNudge && (
+          <div className="mb-2 flex animate-fade-in items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3 py-2 text-[11px] text-primary-glow shadow-[0_0_18px_hsl(250_80%_60%/0.25)]">
+            <Mic2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1">
+              Nice! Now <strong className="font-semibold">try saying it out loud 🎙️</strong> — speaking is what makes you fluent.
+            </span>
+            <button
+              onClick={() => { setVoiceNudge(false); startTalking(); }}
+              className="press rounded-full bg-gradient-primary px-2.5 py-0.5 text-[10px] font-bold text-white shadow-glow"
+            >
+              Speak now
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <button className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
             <Smile className="h-5 w-5" />
           </button>
           <div
             className={
-              "flex h-11 flex-1 items-center gap-2 rounded-full border bg-secondary/50 px-4 transition-colors " +
+              "flex h-10 flex-1 items-center gap-2 rounded-full border bg-secondary/50 px-4 transition-colors " +
               (arabicNow
                 ? "border-amber-400/60 shadow-[0_0_18px_hsl(40_90%_55%/0.25)]"
                 : "border-glass-border/40")
@@ -615,7 +654,7 @@ export const ChatScreen = () => {
               value={draft}
               onChange={(e) => { setDraft(e.target.value); if (langWarning) setLangWarning(false); }}
               onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
-              placeholder="Type a message..."
+              placeholder="Type a message (or tap mic 🎙️)"
               className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
@@ -638,9 +677,10 @@ export const ChatScreen = () => {
           <div className="relative">
             <button
               onClick={sendMessage}
-              className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
+              className="press flex h-9 w-9 items-center justify-center rounded-full border border-primary/40 bg-secondary/70 text-primary-glow hover:bg-primary/20"
+              title="Send text"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3.5 w-3.5" />
             </button>
             {xpBurst && (
               <span

@@ -35,7 +35,7 @@ export const PushToTalk = ({ level, active, onStart, onStop, error }: PushToTalk
   }, [onStart, onStop]);
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-2">
       <div className="flex items-center gap-3">
         <LiveWaveform level={level} active={active} />
         <button
@@ -49,13 +49,17 @@ export const PushToTalk = ({ level, active, onStart, onStop, error }: PushToTalk
           onPointerCancel={onStop}
           onPointerLeave={() => active && onStop()}
           className={
-            "relative flex h-16 w-16 select-none items-center justify-center rounded-full text-white transition-transform " +
+            "relative flex h-20 w-20 select-none items-center justify-center rounded-full text-white transition-transform " +
             (active
-              ? "scale-110 bg-gradient-mic shadow-mic ring-4 ring-primary/40"
-              : "bg-gradient-mic shadow-mic ring-4 ring-primary/20 animate-mic-pulse active:scale-95")
+              ? "scale-110 bg-gradient-mic shadow-mic ring-4 ring-primary/50"
+              : "bg-gradient-mic shadow-[0_0_40px_hsl(250_80%_60%/0.55)] ring-4 ring-primary/30 animate-mic-pulse active:scale-95")
           }
         >
-          {active ? <Mic className="h-7 w-7" /> : <MicOff className="h-7 w-7 opacity-90" />}
+          {/* Soft outer glow halo */}
+          {!active && (
+            <span className="pointer-events-none absolute -inset-2 rounded-full bg-primary/25 blur-xl animate-soft-pulse" />
+          )}
+          {active ? <Mic className="h-9 w-9" /> : <MicOff className="h-9 w-9 opacity-90" />}
           {active && (
             <span
               className="pointer-events-none absolute inset-0 rounded-full"
@@ -65,9 +69,15 @@ export const PushToTalk = ({ level, active, onStart, onStop, error }: PushToTalk
         </button>
         <LiveWaveform level={level} active={active} />
       </div>
-      <span className="text-[10px] font-medium text-muted-foreground">
-        {error ? `⚠ ${error}` : active ? "Speaking… release to stop" : "Hold to speak (or press Space)"}
+      <span className={
+        "text-[12px] font-bold uppercase tracking-wider " +
+        (error ? "text-amber-300" : active ? "text-primary-glow" : "text-foreground/90")
+      }>
+        {error ? `⚠ ${error}` : active ? "Speaking… release to stop" : "🎙️ Tap to speak"}
       </span>
+      {!active && !error && (
+        <span className="text-[10px] text-muted-foreground">Hold the mic, or press Space</span>
+      )}
     </div>
   );
 };
