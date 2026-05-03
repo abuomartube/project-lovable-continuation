@@ -439,6 +439,20 @@ export const ChatScreen = () => {
         </div>
       </div>
     </div>
+    <CorrectionDialog
+      open={!!correcting}
+      original={correcting?.text ?? ""}
+      author={correcting?.author ?? ""}
+      onCancel={() => setCorrecting(null)}
+      onSave={(corrected, note) => {
+        if (!correcting) return;
+        updateMsg(correcting.id, {
+          correction: { original: correcting.text, corrected, note, by: "Ms. Reem" },
+        });
+        setCorrecting(null);
+      }}
+    />
+    </>
   );
 };
 
