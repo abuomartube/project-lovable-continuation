@@ -1,23 +1,22 @@
-import { ChevronLeft, Edit3, Trophy, BarChart3, Award, Settings, ChevronRight, MessageCircle, Mic, DoorOpen } from "lucide-react";
+import { ChevronLeft, Edit3, MessageCircle, Mic, DoorOpen, Lock } from "lucide-react";
 import { IconButton } from "./IconButton";
 import { Avatar } from "./Avatar";
+import { useGamification } from "@/hooks/useGamification";
 
-const stats = [
-  { label: "Messages", value: "320", Icon: MessageCircle, tint: "text-cyan-400 bg-cyan-400/15" },
-  { label: "Voice Time", value: "85 min", Icon: Mic, tint: "text-pink-400 bg-pink-400/15" },
-  { label: "Rooms Joined", value: "24", Icon: DoorOpen, tint: "text-emerald-400 bg-emerald-400/15" },
-];
-
-const menu = [
-  { label: "Achievements", Icon: Trophy },
-  { label: "Statistics", Icon: BarChart3 },
-  { label: "Badges", Icon: Award },
-  { label: "Settings", Icon: Settings },
-];
+const fmtTime = (s: number) => {
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)}h ${m % 60}m`;
+};
 
 export const ProfileScreen = () => {
-  const xp = 750;
-  const max = 1200;
+  const { stats, level, badges } = useGamification();
+  const liveStats = [
+    { label: "Messages",    value: String(stats.messages),         Icon: MessageCircle, tint: "text-cyan-400 bg-cyan-400/15" },
+    { label: "Voice Time",  value: fmtTime(stats.speakSeconds),    Icon: Mic,           tint: "text-pink-400 bg-pink-400/15" },
+    { label: "Rooms Joined", value: String(stats.roomsJoined),     Icon: DoorOpen,      tint: "text-emerald-400 bg-emerald-400/15" },
+  ];
+  const unlockedCount = badges.filter((b) => b.unlocked).length;
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-glass-border/40 bg-card/60 px-4 pb-3 pt-10 backdrop-blur-xl">
@@ -33,15 +32,24 @@ export const ProfileScreen = () => {
         </div>
         <div className="glass rounded-2xl p-4">
           <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="font-semibold">Level 12</span>
-            <span className="text-muted-foreground">{xp} / {max} XP</span>
+            <span className="flex items-center gap-2 font-semibold">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-primary text-[10px] font-bold text-white shadow-glow">
+                {level.level}
+              </span>
+              Level {level.level}
+            </span>
+            <span className="text-muted-foreground">{level.intoLevel} / {level.needed} XP</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/60">
-            <div className="h-full rounded-full bg-gradient-primary shadow-glow" style={{ width: `${(xp / max) * 100}%` }} />
+          <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-secondary/60">
+            <div
+              className="h-full rounded-full bg-gradient-primary shadow-glow transition-[width] duration-500"
+              style={{ width: `${Math.max(2, level.progress * 100)}%` }}
+            />
           </div>
+          <p className="mt-2 text-[10px] text-muted-foreground">Total: {stats.totalXp} XP</p>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {stats.map((s) => (
+          {liveStats.map((s) => (
             <div key={s.label} className="glass flex flex-col items-center gap-1 rounded-2xl p-2.5">
               <span className={`flex h-7 w-7 items-center justify-center rounded-full ${s.tint}`}><s.Icon className="h-3.5 w-3.5" /></span>
               <span className="text-sm font-bold">{s.value}</span>
@@ -49,14 +57,38 @@ export const ProfileScreen = () => {
             </div>
           ))}
         </div>
-        <div className="glass divide-y divide-glass-border/30 overflow-hidden rounded-2xl">
-          {menu.map((m) => (
-            <button key={m.label} className="flex w-full items-center gap-3 px-3 py-3 text-left text-xs hover:bg-secondary/40">
-              <m.Icon className="h-4 w-4 text-primary-glow" />
-              <span className="flex-1 font-medium">{m.label}</span>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-          ))}
+        <div className="glass rounded-2xl p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h4 className="text-xs font-bold">Badges</h4>
+            <span className="text-[10px] text-muted-foreground">{unlockedCount} / {badges.length}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {badges.map(({ badge, unlocked }) => {
+              const Icon = badge.icon;
+              return (
+                <div
+                  key={badge.id}
+                  title={`${badge.name} — ${badge.description}`}
+                  className={
+                    "relative flex flex-col items-center gap-1.5 rounded-2xl border p-2.5 text-center transition-all " +
+                    (unlocked
+                      ? "border-primary/30 bg-primary/5 shadow-[0_0_18px_hsl(var(--primary)/0.18)]"
+                      : "border-glass-border/30 bg-secondary/20 opacity-50")
+                  }
+                >
+                  <span
+                    className={
+                      "flex h-9 w-9 items-center justify-center rounded-xl text-white " +
+                      (unlocked ? `bg-gradient-to-br shadow-glow ${badge.tint}` : "bg-secondary/60")
+                    }
+                  >
+                    {unlocked ? <Icon className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                  </span>
+                  <span className="text-[10px] font-semibold leading-tight">{badge.name}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
