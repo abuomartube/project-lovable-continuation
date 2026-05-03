@@ -246,6 +246,13 @@ export const ChatScreen = () => {
                 +13
               </span>
             </div>
+            <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-200 shadow-[0_0_10px_hsl(35_95%_55%/0.25)] ring-1 ring-amber-400/40">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-300 opacity-70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-300" />
+              </span>
+              <GraduationCap className="h-2.5 w-2.5" /> Teacher Online
+            </span>
           </div>
         </div>
         <button
