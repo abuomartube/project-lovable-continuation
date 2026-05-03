@@ -1,1 +1,4 @@
 project_id = "cvswtauvsmwgbbesyfjj"
+
+[functions.analyze-sentence]
+verify_jwt = false
