@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
-import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2, Star, Trophy, Mic2 } from "lucide-react";
+import { GraduationCap, Pin, Megaphone, CheckCircle2, Sparkles, Pencil, MoreHorizontal, Lightbulb, Wand2, Loader2, Star, Trophy, Mic2, Lock, X, BookOpen } from "lucide-react";
 import { useState } from "react";
 import type { SentenceAnalysis } from "@/hooks/useSentenceAnalysis";
 
@@ -57,6 +57,7 @@ interface ChatBubbleProps {
   isTeacherViewer?: boolean;
   isSpeaker?: boolean;        // user has sent voice notes
   onVoiceReply?: () => void;  // student-side quick voice reply
+  isVoice?: boolean;          // this specific message was sent via voice
   onTogglePin?: () => void;
   onToggleHighlight?: () => void;
   onToggleBest?: () => void;
@@ -78,10 +79,11 @@ export const ChatBubble = ({
   author, text, time, side = "left", reactions, avatarSrc,
   authorRole = "student", highlight, pinned, broadcast, bestMessage, correction,
   learning, learningLoading, onApplyImproved,
-  isTeacherViewer, isSpeaker, onVoiceReply, onTogglePin, onToggleHighlight, onToggleBest, onCorrect,
+  isTeacherViewer, isSpeaker, onVoiceReply, isVoice, onTogglePin, onToggleHighlight, onToggleBest, onCorrect,
 }: ChatBubbleProps) => {
   const isMe = side === "right";
   const [hover, setHover] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   if (broadcast) {
     return (
@@ -226,67 +228,111 @@ export const ChatBubble = ({
           </div>
         )}
 
-        {/* Smart learning suggestions (student self-feedback) */}
-        {(learning || learningLoading) && (
-          <div className={cn("mt-1 w-full", isMe && "flex justify-end")}>
-            {learningLoading && !learning && (
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-glass-border/40 bg-secondary/40 px-2.5 py-1 text-[10px] text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" /> Checking your sentence...
-              </div>
-            )}
-            {learning && (
-              <div className="animate-fade-in max-w-full rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs shadow-[0_0_16px_hsl(250_80%_60%/0.15)]">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary-glow">
-                  <Sparkles className="h-3 w-3" /> Smart suggestion
+        {/* Private feedback (only visible on the owner's own messages) */}
+        {isMe && (learning || learningLoading) && (
+          <div className="mt-1 flex w-full flex-col items-end gap-1">
+            <button
+              onClick={() => setShowFeedback((s) => !s)}
+              className="press inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary-glow hover:bg-primary/20"
+              title="Private feedback — only you can see this"
+            >
+              {learningLoading && !learning ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3" />
+              )}
+              {showFeedback ? "Hide feedback" : "✨ My Feedback"}
+            </button>
+
+            {showFeedback && learning && (
+              <div className="animate-fade-in w-full max-w-full rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs shadow-[0_0_16px_hsl(250_80%_60%/0.15)]">
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary-glow">
+                    <Lock className="h-2.5 w-2.5" /> Private
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">only you can see this</span>
+                  <button
+                    onClick={() => setShowFeedback(false)}
+                    title="Close"
+                    className="ml-auto press flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 </div>
 
-                {learning.mistakes && learning.mistakes.length > 0 ? (
-                  <p className={cn("mt-1 leading-snug", isMe ? "text-right" : "text-left")}>
-                    {renderHighlighted(text, learning.mistakes)}
-                  </p>
-                ) : null}
-
-                {learning.corrected && learning.corrected.trim() !== text.trim() && (
-                  <p className="mt-1 text-foreground/90">
-                    <span className="text-muted-foreground line-through">{text}</span>
-                    <span className="mx-1.5 text-primary-glow">→</span>
-                    <span className="font-medium">{learning.corrected}</span>
-                  </p>
-                )}
-
-                {learning.mistakes && learning.mistakes.length > 0 && (
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {learning.mistakes.map((m, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 text-[9px] text-rose-200"
-                      >
-                        <span className="line-through opacity-70">{m.wrong}</span>
-                        <span className="opacity-50">→</span>
-                        <span className="font-semibold">{m.right}</span>
-                        <span className="ml-0.5 rounded-sm bg-rose-400/20 px-1 text-[8px] uppercase tracking-wide">
-                          {m.type}
-                        </span>
-                      </span>
-                    ))}
+                <div className="mt-2 space-y-2 text-left">
+                  <div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Original</div>
+                    <p className="mt-0.5 leading-snug">
+                      {learning.mistakes?.length
+                        ? renderHighlighted(text, learning.mistakes)
+                        : text}
+                    </p>
                   </div>
-                )}
 
-                {learning.hint && (
-                  <p className="mt-1.5 flex items-start gap-1 text-[11px] text-amber-200/90">
-                    <Lightbulb className="mt-0.5 h-3 w-3 shrink-0 text-amber-300" />
-                    <span>{learning.hint}</span>
-                  </p>
-                )}
+                  {learning.improved && learning.improved.trim() !== text.trim() && (
+                    <div>
+                      <div className="text-[9px] font-bold uppercase tracking-wider text-primary-glow">Improved</div>
+                      <p className="mt-0.5 font-medium text-foreground/95">{learning.improved}</p>
+                      {onApplyImproved && (
+                        <button
+                          onClick={() => onApplyImproved(learning.improved)}
+                          className="press mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-2.5 py-1 text-[10px] font-semibold text-white shadow-glow"
+                        >
+                          <Wand2 className="h-3 w-3" /> Use this
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                {learning.improved && learning.improved.trim() !== text.trim() && onApplyImproved && (
-                  <button
-                    onClick={() => onApplyImproved(learning.improved)}
-                    className="press mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-primary px-2.5 py-1 text-[10px] font-semibold text-white shadow-glow"
-                  >
-                    <Wand2 className="h-3 w-3" /> Improve sentence
-                  </button>
-                )}
+                  {learning.hint && (
+                    <div>
+                      <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Explanation</div>
+                      <p className="mt-0.5 flex items-start gap-1 text-[11px] text-amber-200/90">
+                        <Lightbulb className="mt-0.5 h-3 w-3 shrink-0 text-amber-300" />
+                        <span>{learning.hint}</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {learning.mistakes && learning.mistakes.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <BookOpen className="h-2.5 w-2.5" /> Vocabulary
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {learning.mistakes.map((m, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 text-[9px] text-rose-200"
+                          >
+                            <span className="line-through opacity-70">{m.wrong}</span>
+                            <span className="opacity-50">→</span>
+                            <span className="font-semibold">{m.right}</span>
+                            <span className="ml-0.5 rounded-sm bg-rose-400/20 px-1 text-[8px] uppercase tracking-wide">
+                              {m.type}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {isVoice && (
+                    <div>
+                      <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <Mic2 className="h-2.5 w-2.5" /> Speaking tip
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-primary-glow/90">
+                        Try saying the improved sentence out loud — focus on clear stress on key words.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <p className="mt-2 border-t border-primary/15 pt-1.5 text-[9px] italic text-muted-foreground">
+                  Private feedback — only you can see this
+                </p>
               </div>
             )}
           </div>
