@@ -139,6 +139,7 @@ export const ChatScreen = () => {
   const ratio = arabicRatio(draft);
 
   return (
+    <>
     <div className="relative flex h-full flex-col">
       <PresenceToasts events={events} />
       {/* Header */}
