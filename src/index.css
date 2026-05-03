@@ -48,17 +48,19 @@ All colors MUST be HSL.
     --glass-border: 230 30% 28%;
 
     /* Gradients — premium iOS / cinematic */
-    --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #4f46e5 100%);
     --gradient-bg:
       radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(11,15,42,0) 60%),
       radial-gradient(ellipse at center, #0b0f2a 0%, #0a0f1f 45%, #05070f 100%);
     --gradient-mic: radial-gradient(circle at 30% 30%, #a78bfa 0%, #7c3aed 55%, #4f46e5 100%);
     --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%);
 
-    /* Shadows */
-    --shadow-glow: 0 0 20px rgba(124,58,237,0.6);
-    --shadow-deep: 0 20px 60px -15px rgba(0,0,0,0.8);
-    --shadow-card: 0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(124,58,237,0.15);
+    /* Shadows — global design system */
+    --glow-purple: 0 0 28px rgba(124,58,237,0.35);
+    --glow-blue: 0 0 28px rgba(99,102,241,0.35);
+    --shadow-glow: 0 0 24px rgba(124,58,237,0.45), 0 0 40px rgba(99,102,241,0.25);
+    --shadow-deep: 0 20px 40px rgba(0,0,0,0.6);
+    --shadow-card: 0 20px 40px rgba(0,0,0,0.6), 0 0 24px rgba(124,58,237,0.12);
     --shadow-mic: 0 0 60px rgba(167,139,250,0.55), 0 10px 30px -5px rgba(79,70,229,0.5);
 
     --sidebar-background: 0 0% 98%;
@@ -110,12 +112,18 @@ All colors MUST be HSL.
   .glass {
     background:
       linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(255,255,255,0.02) 100%),
-      rgba(15,18,40,0.72);
+      rgba(255,255,255,0.05);
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 24px;
+    border-radius: 20px;
     box-shadow: var(--shadow-card);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .glass-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.65), 0 0 30px rgba(124,58,237,0.25);
+    border-color: rgba(124,58,237,0.35);
   }
   .bg-app-dark {
     background:
@@ -131,6 +139,8 @@ All colors MUST be HSL.
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
+  .shadow-glow-purple { box-shadow: var(--glow-purple); }
+  .shadow-glow-blue { box-shadow: var(--glow-blue); }
   .shadow-deep {
     box-shadow: var(--shadow-deep);
   }
@@ -142,6 +152,24 @@ All colors MUST be HSL.
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  /* Chat bubble variants — global system */
+  .bubble-out {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(79,70,229,0.35), 0 0 24px rgba(124,58,237,0.35);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .bubble-in {
+    background: rgba(255,255,255,0.05);
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+  }
+  .bubble-system {
+    background: rgba(245,158,11,0.10);
+    color: #fcd34d;
+    border: 1px solid rgba(245,158,11,0.30);
   }
 }
 
