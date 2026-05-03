@@ -1,4 +1,4 @@
-import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
@@ -19,7 +19,7 @@ import { containsArabic, arabicRatio } from "@/lib/language";
 import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
 import { SUGGESTED_PROMPTS, ICE_BREAKERS, QUESTIONS, pickDailyTopic } from "@/lib/prompts";
-import { pickRandom } from "@/lib/topics";
+import { pickRandom, TOPICS } from "@/lib/topics";
 
 interface TextMsg {
   id: string;
