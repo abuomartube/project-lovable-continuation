@@ -12,6 +12,7 @@ import { PresenceToasts } from "./PresenceToasts";
 import { RaiseHandButton } from "./RaiseHandButton";
 import { CorrectionDialog } from "./CorrectionDialog";
 import { RoomRulesBanner } from "./RoomRulesBanner";
+import { DailyChallengeBanner } from "./DailyChallengeBanner";
 import { pickRandomChallenge } from "@/lib/challenges";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
@@ -290,6 +291,13 @@ export const ChatScreen = () => {
 
       {/* Room Rules */}
       <RoomRulesBanner />
+
+      {/* Daily Practice Challenge */}
+      <DailyChallengeBanner
+        onStart={(challenge) => {
+          setDraft(`My answer to today's challenge — "${challenge}"\n\n`);
+        }}
+      />
 
       {/* Control Bar */}
       <div className="flex items-center justify-between gap-2 border-b border-glass-border/30 bg-card/40 px-4 py-2.5">
