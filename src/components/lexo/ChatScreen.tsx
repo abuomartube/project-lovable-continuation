@@ -1,5 +1,6 @@
 import { ChevronLeft, MoreVertical, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
 import { ChatBubble } from "./ChatBubble";
 import { VoiceBubble } from "./VoiceBubble";
@@ -56,6 +57,11 @@ export const ChatScreen = () => {
   const { online, typing, events } = useLivePresence(18);
 
   const [langWarning, setLangWarning] = useState(false);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 650);
+    return () => clearTimeout(t);
+  }, []);
   const arabicNow = containsArabic(draft);
   const ratio = arabicRatio(draft);
 
@@ -112,7 +118,16 @@ export const ChatScreen = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4 [&>*]:animate-fade-in">
+      <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
+        {loading ? (
+          <div className="space-y-3">
+            <MessageSkeleton side="left" />
+            <MessageSkeleton side="left" />
+            <MessageSkeleton side="right" />
+            <MessageSkeleton side="left" />
+          </div>
+        ) : (
+          <>
         <ChatBubble
           author="Omar"
           text={"Hi everyone! 👋\nHow was your weekend?"}
@@ -130,11 +145,11 @@ export const ChatScreen = () => {
         <VoiceBubble duration="0:18" time="10:22 AM" side="right" />
 
         {/* James: File message */}
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 animate-bubble-in-l">
           <Avatar name="James" size="sm" />
           <div className="flex max-w-[75%] flex-col gap-1">
             <span className="text-xs font-medium text-muted-foreground">James</span>
-            <div className="flex items-center gap-3 rounded-2xl rounded-tl-md border border-glass-border/40 bg-secondary/70 px-3 py-2.5 shadow-card">
+            <div className="flex items-center gap-3 rounded-2xl rounded-tl-md bubble-in px-3 py-2.5 transition-all hover:-translate-y-0.5">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_0_18px_hsl(0_75%_55%/0.4)]">
                 <FileText className="h-5 w-5" />
               </div>
@@ -142,7 +157,7 @@ export const ChatScreen = () => {
                 <p className="truncate text-sm font-medium">Useful Phrases.pdf</p>
                 <p className="text-[10px] text-muted-foreground">1.2 MB</p>
               </div>
-              <button className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary hover:bg-primary/25">
+              <button className="press flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary hover:bg-primary/25">
                 <Download className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -151,11 +166,11 @@ export const ChatScreen = () => {
         </div>
 
         {/* Lina: Image with caption */}
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 animate-bubble-in-l">
           <Avatar name="Lina" size="sm" />
           <div className="flex max-w-[78%] flex-col gap-1">
             <span className="text-xs font-medium text-muted-foreground">Lina</span>
-            <div className="overflow-hidden rounded-2xl rounded-tl-md border border-glass-border/40 bg-secondary/70 shadow-card">
+            <div className="overflow-hidden rounded-2xl rounded-tl-md bubble-in transition-all hover:-translate-y-0.5">
               <img
                 src={cafeImg}
                 alt="Cozy cafe"
@@ -176,11 +191,13 @@ export const ChatScreen = () => {
         </div>
 
         {/* System (amber) */}
-        <div className="mx-auto max-w-[85%] rounded-2xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-center text-[11px] text-amber-200 shadow-[0_0_18px_hsl(40_90%_55%/0.15)]">
+        <div className="bubble-system mx-auto max-w-[85%] animate-fade-in rounded-2xl px-3 py-2 text-center text-[11px]">
           <span className="font-semibold">System:</span> Please try to use English only 😊
         </div>
 
         <TypingIndicator users={typing} />
+          </>
+        )}
       </div>
 
       {/* Bottom Action chips */}
@@ -194,7 +211,7 @@ export const ChatScreen = () => {
           ].map(({ label, Icon, tint, bg }) => (
             <button
               key={label}
-              className="flex flex-1 flex-col items-center gap-1 rounded-2xl border border-glass-border/40 bg-secondary/30 px-2 py-2 text-[10px] text-muted-foreground transition-all hover:bg-secondary/60"
+              className="press flex flex-1 flex-col items-center gap-1 rounded-2xl border border-glass-border/40 bg-secondary/30 px-2 py-2 text-[10px] text-muted-foreground hover:bg-secondary/60 hover:-translate-y-0.5 hover:border-primary/30"
             >
               <span className={`flex h-7 w-7 items-center justify-center rounded-full ${bg} ${tint}`}>
                 <Icon className="h-3.5 w-3.5" />
@@ -246,7 +263,10 @@ export const ChatScreen = () => {
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
           </div>
-          <button onClick={sendMessage} className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow transition-all hover:brightness-110 active:scale-95">
+          <button
+            onClick={sendMessage}
+            className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
+          >
             <Send className="h-4 w-4" />
           </button>
         </div>

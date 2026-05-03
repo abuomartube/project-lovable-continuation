@@ -86,10 +86,10 @@ const Index = () => {
                   key={n.id}
                   onClick={() => setActive(n.id)}
                   className={
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all " +
+                    "press flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all " +
                     (isActive
                       ? "bg-gradient-primary text-white shadow-glow"
-                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground")
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground hover:translate-x-0.5")
                   }
                 >
                   <n.Icon className="h-4 w-4" />
@@ -129,8 +129,8 @@ const Index = () => {
           </header>
 
           <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4">
-            <Panel className="min-h-0">
-              <div key={active} className="h-full animate-fade-in overflow-y-auto">{renderCenterTop()}</div>
+            <Panel className="min-h-0 glass-hover">
+              <div key={active} className="page-enter h-full overflow-y-auto">{renderCenterTop()}</div>
             </Panel>
             <Panel className="min-h-0">
               <div className="h-full">

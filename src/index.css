@@ -171,6 +171,23 @@ All colors MUST be HSL.
     color: #fcd34d;
     border: 1px solid rgba(245,158,11,0.30);
   }
+  .press {
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .press:hover { filter: brightness(1.08); }
+  .press:active { transform: scale(0.97); }
+  .skeleton {
+    background: linear-gradient(90deg,
+      rgba(255,255,255,0.04) 0%,
+      rgba(124,58,237,0.10) 50%,
+      rgba(255,255,255,0.04) 100%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    border-radius: 12px;
+  }
+  .page-enter { animation: page-enter 0.35s cubic-bezier(0.22,1,0.36,1) both; }
+  .animate-bubble-in-l { animation: bubble-in-l 0.32s cubic-bezier(0.22,1,0.36,1) both; }
+  .animate-bubble-in-r { animation: bubble-in-r 0.32s cubic-bezier(0.22,1,0.36,1) both; }
 }
 
 @keyframes mic-pulse {
@@ -178,3 +195,20 @@ All colors MUST be HSL.
   50% { box-shadow: 0 0 70px hsl(258 95% 75% / 0.7), 0 10px 40px -5px hsl(258 90% 60% / 0.6); }
 }
 .animate-mic-pulse { animation: mic-pulse 2.4s ease-in-out infinite; }
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes page-enter {
+  0% { opacity: 0; transform: translateY(8px) scale(0.992); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes bubble-in-l {
+  0% { opacity: 0; transform: translateY(8px) translateX(-6px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
+}
+@keyframes bubble-in-r {
+  0% { opacity: 0; transform: translateY(8px) translateX(6px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
+}
