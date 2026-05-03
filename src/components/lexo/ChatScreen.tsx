@@ -280,6 +280,7 @@ export const ChatScreen = () => {
             </span>
           </div>
         </div>
+        <ProgressWidget />
         <button
           onClick={toggleRole}
           title="Toggle role (demo)"
