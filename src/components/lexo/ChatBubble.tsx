@@ -13,13 +13,16 @@ interface ChatBubbleProps {
 export const ChatBubble = ({ author, text, time, side = "left", reactions, avatarSrc }: ChatBubbleProps) => {
   const isMe = side === "right";
   return (
-    <div className={cn("flex w-full gap-2", isMe ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn(
+      "flex w-full gap-2",
+      isMe ? "flex-row-reverse animate-bubble-in-r" : "flex-row animate-bubble-in-l",
+    )}>
       {!isMe && <Avatar name={author} size="sm" src={avatarSrc} />}
       <div className={cn("flex max-w-[75%] flex-col gap-1", isMe && "items-end")}>
         {!isMe && <span className="text-xs font-medium text-muted-foreground">{author}</span>}
         <div
           className={cn(
-            "whitespace-pre-line rounded-[20px] px-3.5 py-2.5 text-sm transition-all",
+            "whitespace-pre-line rounded-[20px] px-3.5 py-2.5 text-sm transition-all hover:scale-[1.015] hover:-translate-y-0.5",
             isMe ? "rounded-br-md bubble-out" : "rounded-tl-md bubble-in",
           )}
         >
