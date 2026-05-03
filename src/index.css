@@ -37,7 +37,7 @@ All colors MUST be HSL.
     --success: 152 65% 50%;
     --success-foreground: 0 0% 100%;
 
-    --border: 0 0% 100%; /* used with /[0.08] opacity via tw */
+    --border: 230 30% 18%;
     --input: 230 25% 18%;
     --ring: 258 90% 66%;
 
