@@ -26,7 +26,7 @@ All colors MUST be HSL.
     --secondary-foreground: 220 30% 96%;
 
     --muted: 230 22% 18%;
-    --muted-foreground: 220 15% 65%;
+    --muted-foreground: 240 5% 70%; /* #a1a1aa */
 
     --accent: 222 90% 62%;
     --accent-foreground: 0 0% 100%;
@@ -37,7 +37,7 @@ All colors MUST be HSL.
     --success: 152 65% 50%;
     --success-foreground: 0 0% 100%;
 
-    --border: 230 25% 20%;
+    --border: 0 0% 100%; /* used with /[0.08] opacity via tw */
     --input: 230 25% 18%;
     --ring: 258 90% 66%;
 
