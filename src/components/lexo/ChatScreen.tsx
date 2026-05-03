@@ -38,7 +38,11 @@ export const ChatScreen = () => {
     else if (pttStartRef.current != null) {
       const seconds = Math.round((performance.now() - pttStartRef.current) / 1000);
       pttStartRef.current = null;
-      if (seconds > 0) award({ type: "speak", seconds });
+      if (seconds > 0) {
+        award({ type: "speak", seconds });
+        award({ type: "voice-message" });
+        triggerXpBurst(20);
+      }
     }
   }, [pttActive, award]);
 
