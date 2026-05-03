@@ -41,7 +41,7 @@ All colors MUST be HSL.
     --input: 230 25% 18%;
     --ring: 258 90% 66%;
 
-    --radius: 1rem;
+    --radius: 1.25rem; /* 20px global */
 
     /* Glass surface */
     --glass: 230 30% 14%;
