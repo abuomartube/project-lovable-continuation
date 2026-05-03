@@ -50,6 +50,7 @@ export const ChatScreen = () => {
       return;
     }
     award({ type: "message", chars: text.length });
+    triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
   };
@@ -58,6 +59,15 @@ export const ChatScreen = () => {
 
   const [langWarning, setLangWarning] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [xpBurst, setXpBurst] = useState<{ id: number; amount: number } | null>(null);
+  const burstId = useRef(0);
+  const triggerXpBurst = (amount: number) => {
+    burstId.current += 1;
+    setXpBurst({ id: burstId.current, amount });
+    setTimeout(() => {
+      setXpBurst((b) => (b && b.id === burstId.current ? null : b));
+    }, 1100);
+  };
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 650);
     return () => clearTimeout(t);
