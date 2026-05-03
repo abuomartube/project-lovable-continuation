@@ -622,13 +622,29 @@ export const ChatScreen = () => {
             </button>
           </div>
         )}
+
+        {voiceNudge && (
+          <div className="mb-2 flex animate-fade-in items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3 py-2 text-[11px] text-primary-glow shadow-[0_0_18px_hsl(250_80%_60%/0.25)]">
+            <Mic2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1">
+              Nice! Now <strong className="font-semibold">try saying it out loud 🎙️</strong> — speaking is what makes you fluent.
+            </span>
+            <button
+              onClick={() => { setVoiceNudge(false); startTalking(); }}
+              className="press rounded-full bg-gradient-primary px-2.5 py-0.5 text-[10px] font-bold text-white shadow-glow"
+            >
+              Speak now
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <button className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
             <Smile className="h-5 w-5" />
           </button>
           <div
             className={
-              "flex h-11 flex-1 items-center gap-2 rounded-full border bg-secondary/50 px-4 transition-colors " +
+              "flex h-10 flex-1 items-center gap-2 rounded-full border bg-secondary/50 px-4 transition-colors " +
               (arabicNow
                 ? "border-amber-400/60 shadow-[0_0_18px_hsl(40_90%_55%/0.25)]"
                 : "border-glass-border/40")
@@ -638,7 +654,7 @@ export const ChatScreen = () => {
               value={draft}
               onChange={(e) => { setDraft(e.target.value); if (langWarning) setLangWarning(false); }}
               onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
-              placeholder="Type a message..."
+              placeholder="Type a message (or tap mic 🎙️)"
               className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
@@ -661,9 +677,10 @@ export const ChatScreen = () => {
           <div className="relative">
             <button
               onClick={sendMessage}
-              className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
+              className="press flex h-9 w-9 items-center justify-center rounded-full border border-primary/40 bg-secondary/70 text-primary-glow hover:bg-primary/20"
+              title="Send text"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3.5 w-3.5" />
             </button>
             {xpBurst && (
               <span
