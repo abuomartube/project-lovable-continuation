@@ -211,7 +211,7 @@ export const ChatScreen = () => {
           ].map(({ label, Icon, tint, bg }) => (
             <button
               key={label}
-              className="flex flex-1 flex-col items-center gap-1 rounded-2xl border border-glass-border/40 bg-secondary/30 px-2 py-2 text-[10px] text-muted-foreground transition-all hover:bg-secondary/60"
+              className="press flex flex-1 flex-col items-center gap-1 rounded-2xl border border-glass-border/40 bg-secondary/30 px-2 py-2 text-[10px] text-muted-foreground hover:bg-secondary/60 hover:-translate-y-0.5 hover:border-primary/30"
             >
               <span className={`flex h-7 w-7 items-center justify-center rounded-full ${bg} ${tint}`}>
                 <Icon className="h-3.5 w-3.5" />
