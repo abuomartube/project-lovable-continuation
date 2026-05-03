@@ -70,6 +70,11 @@ export const ChatScreen = () => {
 
   const pinned = messages.find((m) => m.pinned);
 
+  // Authors who have sent at least one voice note → "Speaker" badge
+  const speakerAuthors = new Set(messages.filter((m) => m.voiceNote).map((m) => m.author));
+  // Seed a couple so badges feel alive
+  ["Sara", "Ms. Reem"].forEach((n) => speakerAuthors.add(n));
+
   // Auto-post today's topic as a system message when the room opens
   const seededTopic = useRef(false);
   useEffect(() => {
@@ -317,6 +322,16 @@ export const ChatScreen = () => {
         }}
         onQuickReply={(starter) => setDraft((d) => (d ? d + " " + starter : starter))}
       />
+
+      {/* Voice-first nudge under daily challenge */}
+      <div className="flex items-center gap-2 border-b border-glass-border/30 bg-card/30 px-3 py-2">
+        <button
+          onClick={() => startTalking()}
+          className="press flex flex-1 items-center justify-center gap-2 rounded-full border border-primary/40 bg-gradient-to-r from-primary/20 to-primary-glow/20 px-3 py-1.5 text-[11px] font-bold text-primary-glow shadow-[0_0_18px_hsl(250_80%_60%/0.3)]"
+        >
+          <Mic2 className="h-3.5 w-3.5" /> Answer using voice 🎙️
+        </button>
+      </div>
 
       {/* Social activity around today's challenge */}
       <SocialActivity />
