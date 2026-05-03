@@ -1,4 +1,5 @@
 import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle, Wand2, Loader2, ShieldCheck, Languages, Smile as SmileIcon, Clock, Target, Mic2 } from "lucide-react";
+import { ProgressWidget } from "./ProgressWidget";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
@@ -280,6 +281,7 @@ export const ChatScreen = () => {
             </span>
           </div>
         </div>
+        <ProgressWidget />
         <button
           onClick={toggleRole}
           title="Toggle role (demo)"
