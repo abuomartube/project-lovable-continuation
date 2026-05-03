@@ -18,6 +18,8 @@ import { useRole } from "@/hooks/useRole";
 import { containsArabic, arabicRatio } from "@/lib/language";
 import { AlertTriangle } from "lucide-react";
 import cafeImg from "@/assets/cafe.jpg";
+import { SUGGESTED_PROMPTS, ICE_BREAKERS, QUESTIONS, pickDailyTopic } from "@/lib/prompts";
+import { pickRandom } from "@/lib/topics";
 
 interface TextMsg {
   id: string;
@@ -53,6 +55,26 @@ export const ChatScreen = () => {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
   const pinned = messages.find((m) => m.pinned);
+
+  // Auto-post today's topic as a system message when the room opens
+  const seededTopic = useRef(false);
+  useEffect(() => {
+    if (seededTopic.current) return;
+    seededTopic.current = true;
+    const topic = pickDailyTopic();
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [
+      {
+        id: "system-daily-topic",
+        author: "Room",
+        authorRole: "teacher",
+        text: `Today's topic: ${topic.text}`,
+        time,
+        broadcast: true,
+      },
+      ...prev,
+    ]);
+  }, []);
   const { level, speakers, pttActive, error, startTalking, stopTalking } = useVoice({
     roomId: "speaking-intermediate",
     identity: { id: "me", name: "You" },
