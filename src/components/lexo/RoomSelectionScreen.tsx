@@ -133,8 +133,8 @@ export const RoomSelectionScreen = ({ recommendedIds = [] }: RoomSelectionScreen
             <div
               key={r.title}
               className={
-                "glass relative flex items-center gap-3 rounded-2xl p-3 transition-all hover:border-primary/40 hover:shadow-glow " +
-                (recommended ? "border-primary/50 shadow-glow" : "")
+                "glass glass-hover relative flex items-center gap-3 rounded-[20px] p-3 " +
+                (recommended ? "!border-primary/50 shadow-glow" : "")
               }
             >
               {recommended && (
