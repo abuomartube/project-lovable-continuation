@@ -47,17 +47,19 @@ All colors MUST be HSL.
     --glass: 230 30% 14%;
     --glass-border: 230 30% 28%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(222 90% 62%) 100%);
-    --gradient-bg: radial-gradient(ellipse at top, hsl(258 60% 18% / 0.6) 0%, hsl(230 40% 6%) 60%);
-    --gradient-mic: radial-gradient(circle at 30% 30%, hsl(268 95% 78%) 0%, hsl(258 90% 60%) 50%, hsl(222 80% 45%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(230 30% 14% / 0.85) 0%, hsl(230 30% 10% / 0.85) 100%);
+    /* Gradients — premium iOS / cinematic */
+    --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    --gradient-bg:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(11,15,42,0) 60%),
+      radial-gradient(ellipse at center, #0b0f2a 0%, #0a0f1f 45%, #05070f 100%);
+    --gradient-mic: radial-gradient(circle at 30% 30%, #a78bfa 0%, #7c3aed 55%, #4f46e5 100%);
+    --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%);
 
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(258 90% 66% / 0.45);
-    --shadow-deep: 0 20px 60px -15px hsl(230 60% 2% / 0.7);
-    --shadow-card: 0 10px 40px -10px hsl(230 60% 2% / 0.6);
-    --shadow-mic: 0 0 60px hsl(258 95% 70% / 0.55), 0 10px 30px -5px hsl(258 90% 50% / 0.5);
+    --shadow-glow: 0 0 20px rgba(124,58,237,0.6);
+    --shadow-deep: 0 20px 60px -15px rgba(0,0,0,0.8);
+    --shadow-card: 0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(124,58,237,0.15);
+    --shadow-mic: 0 0 60px rgba(167,139,250,0.55), 0 10px 30px -5px rgba(79,70,229,0.5);
 
     --sidebar-background: 0 0% 98%;
 
@@ -96,18 +98,21 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    background-image: var(--gradient-bg);
+    background: #05070f var(--gradient-bg);
     background-attachment: fixed;
     min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
 @layer utilities {
   .glass {
-    background: var(--gradient-card);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid hsl(var(--glass-border) / 0.5);
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
     box-shadow: var(--shadow-card);
   }
   .bg-gradient-primary {
