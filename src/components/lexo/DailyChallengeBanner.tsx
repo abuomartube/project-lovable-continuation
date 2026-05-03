@@ -1,7 +1,8 @@
-import { Target, Clock, Sparkles, CheckCircle2, Flame, MessageSquarePlus } from "lucide-react";
+import { Target, Clock, Sparkles, CheckCircle2, Flame, MessageSquarePlus, Zap, Award } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DAILY_CHALLENGES } from "@/lib/challenges";
 import { useDailyChallenge, getDayIndex, msUntilNextDay } from "@/hooks/useDailyChallenge";
+import { useGamification } from "@/hooks/useGamification";
 
 function pickChallengeForDay(dayIndex: number) {
   return DAILY_CHALLENGES[dayIndex % DAILY_CHALLENGES.length];
@@ -12,9 +13,9 @@ function formatCountdown(ms: number) {
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
-    .toString()
-    .padStart(2, "0")}`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 }
 
 interface Props {
@@ -34,6 +35,7 @@ export const DailyChallengeBanner = ({ onStart, onQuickReply }: Props) => {
   const dayIndex = useMemo(() => getDayIndex(), []);
   const challenge = useMemo(() => pickChallengeForDay(dayIndex), [dayIndex]);
   const { completed, streak, bestStreak, complete } = useDailyChallenge();
+  const { award } = useGamification();
   const [countdown, setCountdown] = useState(msUntilNextDay());
 
   // Tick countdown every second
@@ -44,7 +46,10 @@ export const DailyChallengeBanner = ({ onStart, onQuickReply }: Props) => {
 
   const handleStart = () => {
     onStart(challenge);
-    complete();
+    if (!completed) {
+      complete();
+      award({ type: "challenge-completed", streak: streak + 1 });
+    }
   };
 
   return (
@@ -68,17 +73,26 @@ export const DailyChallengeBanner = ({ onStart, onQuickReply }: Props) => {
                   <Flame className="h-2.5 w-2.5" /> Day {streak}
                 </span>
               )}
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-secondary/60 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-muted-foreground">
-                <Clock className="h-2.5 w-2.5" /> {formatCountdown(countdown)}
+              <span
+                className={
+                  "ml-auto inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold tabular-nums " +
+                  (countdown < 2 * 3600_000
+                    ? "bg-rose-400/15 text-rose-200 ring-1 ring-rose-400/30 animate-soft-pulse"
+                    : "bg-secondary/60 text-muted-foreground")
+                }
+                title="Time left to complete today's challenge"
+              >
+                <Clock className="h-2.5 w-2.5" /> Ends in {formatCountdown(countdown)}
               </span>
             </div>
             <p className="mt-0.5 truncate text-[12px] font-semibold text-foreground">
               {challenge}
             </p>
             {completed && (
-              <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300">
-                <CheckCircle2 className="h-3 w-3" />
-                You completed today's challenge
+              <p className="mt-0.5 inline-flex items-center gap-2 text-[10px] font-semibold text-emerald-300">
+                <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> You completed today's challenge</span>
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-primary-glow"><Zap className="h-2.5 w-2.5" /> +{50 + Math.min(10, streak) * 5} XP</span>
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-400/15 px-1.5 py-0.5 text-amber-300"><Award className="h-2.5 w-2.5" /> Badge progress</span>
               </p>
             )}
           </div>
