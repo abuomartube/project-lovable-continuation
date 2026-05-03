@@ -6,8 +6,11 @@ import { VoiceBubble } from "./VoiceBubble";
 import { IconButton } from "./IconButton";
 import { PushToTalk } from "./PushToTalk";
 import { SpeakingIndicator } from "./SpeakingIndicator";
+import { TypingIndicator } from "./TypingIndicator";
+import { PresenceToasts } from "./PresenceToasts";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
+import { useLivePresence } from "@/hooks/useLivePresence";
 import cafeImg from "@/assets/cafe.jpg";
 
 export const ChatScreen = () => {
@@ -41,8 +44,12 @@ export const ChatScreen = () => {
     award({ type: "message", chars: text.length });
     setDraft("");
   };
+
+  const { online, typing, events } = useLivePresence(18);
+
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col">
+      <PresenceToasts events={events} />
       {/* Header */}
       <div className="flex items-center justify-between border-b border-glass-border/40 bg-card/60 px-4 pb-3 pt-10 backdrop-blur-xl">
         <IconButton variant="ghost" size="sm">
@@ -52,7 +59,8 @@ export const ChatScreen = () => {
           <h2 className="text-sm font-semibold">Speaking Room — Intermediate</h2>
           <div className="mt-1 flex items-center gap-2">
             <span className="flex items-center gap-1 text-[10px] text-success">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" /> 18 online
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-soft-pulse" />
+              <span key={online} className="inline-block animate-fade-in tabular-nums">{online}</span> online
             </span>
             <div className="flex -space-x-1.5">
               {["Sara", "Omar", "Lina"].map((n) => (
