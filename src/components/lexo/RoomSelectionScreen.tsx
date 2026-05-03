@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { ChevronLeft, Search, MessageCircle, Mic, GraduationCap, Users } from "lucide-react";
+import { ChevronLeft, Search, MessageCircle, Mic, GraduationCap, Users, Sparkles } from "lucide-react";
 import { IconButton } from "./IconButton";
 
 const filters = ["الكل", "محادثة", "صوت فقط", "IELTS", "عام"];
 
 type Room = {
+  id: string;
   title: string;
   level?: string;
   online: number;
@@ -16,6 +17,7 @@ type Room = {
 
 const rooms: Room[] = [
   {
+    id: "beginner",
     title: "غرفة المحادثة - المبتدئين",
     level: "A1 → A2",
     online: 18,
@@ -25,6 +27,7 @@ const rooms: Room[] = [
     glow: "shadow-[0_0_25px_hsl(258_90%_60%/0.45)]",
   },
   {
+    id: "intermediate",
     title: "غرفة المحادثة - المتوسط",
     level: "B1+ → C1",
     online: 24,
@@ -34,6 +37,7 @@ const rooms: Room[] = [
     glow: "shadow-[0_0_25px_hsl(200_90%_55%/0.45)]",
   },
   {
+    id: "voice",
     title: "غرفة الصوت فقط",
     online: 12,
     cta: "soon",
@@ -42,6 +46,7 @@ const rooms: Room[] = [
     glow: "shadow-[0_0_25px_hsl(340_85%_60%/0.45)]",
   },
   {
+    id: "ielts",
     title: "غرفة محادثة الآيلتس",
     level: "B1 → C2",
     online: 16,
@@ -51,6 +56,7 @@ const rooms: Room[] = [
     glow: "shadow-[0_0_25px_hsl(30_90%_55%/0.45)]",
   },
   {
+    id: "general",
     title: "الدردشة العامة",
     online: 20,
     cta: "join",
@@ -60,8 +66,16 @@ const rooms: Room[] = [
   },
 ];
 
-export const RoomSelectionScreen = () => {
+interface RoomSelectionScreenProps {
+  recommendedIds?: string[];
+}
+
+export const RoomSelectionScreen = ({ recommendedIds = [] }: RoomSelectionScreenProps) => {
   const [active, setActive] = useState("الكل");
+  const recSet = new Set(recommendedIds);
+  const sorted = recommendedIds.length
+    ? [...rooms].sort((a, b) => Number(recSet.has(b.id)) - Number(recSet.has(a.id)))
+    : rooms;
 
   return (
     <div dir="rtl" className="flex h-full flex-col">
@@ -111,14 +125,23 @@ export const RoomSelectionScreen = () => {
 
       {/* Room list */}
       <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
-        {rooms.map((r) => {
+        {sorted.map((r) => {
           const Icon = r.icon;
           const disabled = r.cta === "soon";
+          const recommended = recSet.has(r.id);
           return (
             <div
               key={r.title}
-              className="glass flex items-center gap-3 rounded-2xl p-3 transition-all hover:border-primary/40 hover:shadow-glow"
+              className={
+                "glass relative flex items-center gap-3 rounded-2xl p-3 transition-all hover:border-primary/40 hover:shadow-glow " +
+                (recommended ? "border-primary/50 shadow-glow" : "")
+              }
             >
+              {recommended && (
+                <span className="absolute -top-2 right-4 flex items-center gap-1 rounded-full bg-gradient-primary px-2 py-0.5 text-[9px] font-bold text-white shadow-glow">
+                  <Sparkles className="h-2.5 w-2.5" /> موصى به لك
+                </span>
+              )}
               <div
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white ${r.iconTint} ${r.glow}`}
               >

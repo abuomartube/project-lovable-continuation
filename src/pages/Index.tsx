@@ -12,6 +12,8 @@ import { LeaderboardScreen } from "@/components/lexo/LeaderboardScreen";
 import { SettingsScreen } from "@/components/lexo/SettingsScreen";
 import { CourseSelectionScreen } from "@/components/lexo/CourseSelectionScreen";
 import { useLivePresence } from "@/hooks/useLivePresence";
+import { OnboardingScreen } from "@/components/lexo/OnboardingScreen";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 const NAV = [
   { id: "rooms", label: "Rooms", Icon: MessageCircle },
@@ -31,6 +33,8 @@ const Panel = ({ children, className = "" }: { children: ReactNode; className?: 
 const Index = () => {
   const [active, setActive] = useState<NavId>("rooms");
   const { online } = useLivePresence(24);
+  const { completed, profile } = useOnboarding();
+  const [recommended, setRecommended] = useState<string[]>([]);
 
   const renderCenterTop = () => {
     switch (active) {
@@ -40,12 +44,17 @@ const Index = () => {
       case "profile": return <ProfileScreen />;
       case "settings": return <SettingsScreen />;
       case "rooms":
-      default: return <RoomSelectionScreen />;
+      default: return <RoomSelectionScreen recommendedIds={recommended} />;
     }
   };
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-app-dark text-foreground">
+      {!completed && (
+        <OnboardingScreen
+          onComplete={(rooms) => { setRecommended(rooms); setActive("rooms"); }}
+        />
+      )}
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute inset-0 bg-app-dark" />
         <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/15 blur-[160px]" />
@@ -93,11 +102,13 @@ const Index = () => {
           <div className="mt-auto glass rounded-2xl p-3">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-xs font-bold text-white shadow-glow">
-                AH
+                {(profile?.name ?? "Ahmed").slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-xs font-semibold">Ahmed</p>
-                <p className="text-[10px] text-muted-foreground">Level B1+ · Online</p>
+                <p className="truncate text-xs font-semibold">{profile?.name ?? "Ahmed"}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Level {profile?.level ?? "B1+"} · Online
+                </p>
               </div>
             </div>
           </div>
