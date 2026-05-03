@@ -13,6 +13,7 @@ import { RaiseHandButton } from "./RaiseHandButton";
 import { CorrectionDialog } from "./CorrectionDialog";
 import { RoomRulesBanner } from "./RoomRulesBanner";
 import { DailyChallengeBanner } from "./DailyChallengeBanner";
+import { StreakBanner } from "./StreakBanner";
 import { SocialActivity } from "./SocialActivity";
 import { pickRandomChallenge } from "@/lib/challenges";
 import { useVoice } from "@/hooks/useVoice";
@@ -314,6 +315,9 @@ export const ChatScreen = () => {
 
       {/* Room Rules */}
       <RoomRulesBanner />
+
+      {/* Streak / urgency / missed banner */}
+      <StreakBanner />
 
       {/* Daily Practice Challenge */}
       <DailyChallengeBanner

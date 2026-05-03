@@ -9,9 +9,22 @@ interface State {
   streak: number;
   /** Longest streak ever achieved. */
   bestStreak: number;
+  /** Total challenges completed across all time (badge progress). */
+  totalCompleted: number;
+  /** Streak length right before the most recent reset (for "you lost X days" message). */
+  lastLostStreak: number;
+  /** Has the user already dismissed the "lost streak" notice for this reset? */
+  lostAcknowledged: boolean;
 }
 
-const EMPTY: State = { lastCompletedDay: null, streak: 0, bestStreak: 0 };
+const EMPTY: State = {
+  lastCompletedDay: null,
+  streak: 0,
+  bestStreak: 0,
+  totalCompleted: 0,
+  lastLostStreak: 0,
+  lostAcknowledged: true,
+};
 
 export function getDayIndex(d = new Date()): number {
   return Math.floor((d.getTime() - d.getTimezoneOffset() * 60_000) / 86_400_000);
@@ -44,7 +57,12 @@ export const useDailyChallenge = () => {
   useEffect(() => {
     if (state.lastCompletedDay == null) return;
     if (state.lastCompletedDay < today - 1 && state.streak !== 0) {
-      const next: State = { ...state, streak: 0 };
+      const next: State = {
+        ...state,
+        streak: 0,
+        lastLostStreak: state.streak,
+        lostAcknowledged: false,
+      };
       setState(next);
       save(next);
     }
@@ -59,14 +77,25 @@ export const useDailyChallenge = () => {
       const continuing = prev.lastCompletedDay === today - 1;
       const streak = continuing ? prev.streak + 1 : 1;
       const next: State = {
+        ...prev,
         lastCompletedDay: today,
         streak,
         bestStreak: Math.max(prev.bestStreak, streak),
+        totalCompleted: prev.totalCompleted + 1,
+        lostAcknowledged: true,
       };
       save(next);
       return next;
     });
   }, [today]);
+
+  const acknowledgeLost = useCallback(() => {
+    setState((prev) => {
+      const next = { ...prev, lostAcknowledged: true };
+      save(next);
+      return next;
+    });
+  }, []);
 
   const reset = useCallback(() => {
     setState(EMPTY);
@@ -77,8 +106,12 @@ export const useDailyChallenge = () => {
     completed,
     streak: state.streak,
     bestStreak: state.bestStreak,
+    totalCompleted: state.totalCompleted,
     lastCompletedDay: state.lastCompletedDay,
+    lostStreak: state.lastLostStreak,
+    streakLost: !state.lostAcknowledged && state.lastLostStreak > 0,
     complete,
+    acknowledgeLost,
     reset,
   };
 };
