@@ -312,6 +312,43 @@ export const ChatScreen = () => {
 
       {/* Bottom Action chips */}
       <div className="border-t border-glass-border/40 bg-card/60 px-3 pb-2 pt-3 backdrop-blur-xl">
+        {isTeacher && (
+          <div className="mb-2.5 animate-fade-in">
+            {!broadcasting ? (
+              <button
+                onClick={() => setBroadcasting(true)}
+                className="press flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:bg-amber-400/15"
+              >
+                <Megaphone className="h-3.5 w-3.5" /> Broadcast to room
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-2">
+                <Megaphone className="h-4 w-4 shrink-0 text-amber-300" />
+                <input
+                  autoFocus
+                  value={broadcastText}
+                  onChange={(e) => setBroadcastText(e.target.value.slice(0, 240))}
+                  onKeyDown={(e) => { if (e.key === "Enter") sendBroadcast(); }}
+                  placeholder="Announce something to everyone..."
+                  className="flex-1 bg-transparent text-xs text-amber-50 placeholder:text-amber-200/50 focus:outline-none"
+                />
+                <button
+                  onClick={sendBroadcast}
+                  className="press rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-[10px] font-bold text-amber-950"
+                >
+                  Send
+                </button>
+                <button
+                  onClick={() => { setBroadcasting(false); setBroadcastText(""); }}
+                  className="rounded-full p-1 text-amber-200 hover:bg-white/5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mb-2.5 flex items-center justify-between gap-2">
           {[
             { label: "Topic", Icon: Lightbulb, tint: "text-primary-glow", bg: "bg-primary/15" },
