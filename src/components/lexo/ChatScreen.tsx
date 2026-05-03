@@ -1,5 +1,5 @@
 import { ChevronLeft, MoreVertical, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
 import { ChatBubble } from "./ChatBubble";
@@ -31,6 +31,17 @@ export const ChatScreen = () => {
   const joined = useRef(false);
   useEffect(() => { if (!joined.current) { joined.current = true; award({ type: "join-room" }); } }, [award]);
 
+  const [xpBurst, setXpBurst] = useState<{ id: number; amount: number } | null>(null);
+  const burstId = useRef(0);
+  const triggerXpBurst = useCallback((amount: number) => {
+    burstId.current += 1;
+    const id = burstId.current;
+    setXpBurst({ id, amount });
+    setTimeout(() => {
+      setXpBurst((b) => (b && b.id === id ? null : b));
+    }, 1100);
+  }, []);
+
   // Award XP for time held on PTT
   const pttStartRef = useRef<number | null>(null);
   useEffect(() => {
@@ -44,7 +55,7 @@ export const ChatScreen = () => {
         triggerXpBurst(20);
       }
     }
-  }, [pttActive, award]);
+  }, [pttActive, award, triggerXpBurst]);
 
   const sendMessage = () => {
     const text = draft.trim();
@@ -63,15 +74,6 @@ export const ChatScreen = () => {
 
   const [langWarning, setLangWarning] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [xpBurst, setXpBurst] = useState<{ id: number; amount: number } | null>(null);
-  const burstId = useRef(0);
-  const triggerXpBurst = (amount: number) => {
-    burstId.current += 1;
-    setXpBurst({ id: burstId.current, amount });
-    setTimeout(() => {
-      setXpBurst((b) => (b && b.id === burstId.current ? null : b));
-    }, 1100);
-  };
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 650);
     return () => clearTimeout(t);
