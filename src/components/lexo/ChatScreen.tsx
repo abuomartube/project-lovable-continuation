@@ -449,6 +449,8 @@ export const ChatScreen = () => {
               learningLoading={!!analyzingIds[m.id]}
               onApplyImproved={(improved) => updateMsg(m.id, { text: improved })}
               isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
+              isSpeaker={speakerAuthors.has(m.author)}
+              onVoiceReply={!isTeacher ? () => startTalking() : undefined}
               onCorrect={() => setCorrecting(m)}
               onTogglePin={() => setMessages((prev) => prev.map((x) =>
                 x.id === m.id ? { ...x, pinned: !x.pinned } : { ...x, pinned: false }
