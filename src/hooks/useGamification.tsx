@@ -44,6 +44,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
     setStats((prev) => {
       const next: Stats = { ...prev, totalXp: prev.totalXp + delta };
       if (e.type === "message") next.messages = prev.messages + 1;
+      else if (e.type === "voice-message") next.messages = prev.messages + 1;
       else if (e.type === "speak") next.speakSeconds = prev.speakSeconds + e.seconds;
       else if (e.type === "join-room") next.roomsJoined = prev.roomsJoined + 1;
       else if (e.type === "topic-completed") next.topicsCompleted = prev.topicsCompleted + 1;
@@ -55,6 +56,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       const id = ++counter.current;
       const reason: Record<XPEvent["type"], string> = {
         message: "Message sent",
+        "voice-message": "Voice sent",
         speak: "Speaking",
         "join-room": "Joined room",
         "topic-completed": "Topic completed",

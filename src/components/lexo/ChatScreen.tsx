@@ -1,5 +1,5 @@
 import { ChevronLeft, MoreVertical, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, RotateCw, Image as ImageIcon, VolumeX, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
 import { ChatBubble } from "./ChatBubble";
@@ -31,6 +31,17 @@ export const ChatScreen = () => {
   const joined = useRef(false);
   useEffect(() => { if (!joined.current) { joined.current = true; award({ type: "join-room" }); } }, [award]);
 
+  const [xpBurst, setXpBurst] = useState<{ id: number; amount: number } | null>(null);
+  const burstId = useRef(0);
+  const triggerXpBurst = useCallback((amount: number) => {
+    burstId.current += 1;
+    const id = burstId.current;
+    setXpBurst({ id, amount });
+    setTimeout(() => {
+      setXpBurst((b) => (b && b.id === id ? null : b));
+    }, 1100);
+  }, []);
+
   // Award XP for time held on PTT
   const pttStartRef = useRef<number | null>(null);
   useEffect(() => {
@@ -38,9 +49,13 @@ export const ChatScreen = () => {
     else if (pttStartRef.current != null) {
       const seconds = Math.round((performance.now() - pttStartRef.current) / 1000);
       pttStartRef.current = null;
-      if (seconds > 0) award({ type: "speak", seconds });
+      if (seconds > 0) {
+        award({ type: "speak", seconds });
+        award({ type: "voice-message" });
+        triggerXpBurst(20);
+      }
     }
-  }, [pttActive, award]);
+  }, [pttActive, award, triggerXpBurst]);
 
   const sendMessage = () => {
     const text = draft.trim();
@@ -50,6 +65,7 @@ export const ChatScreen = () => {
       return;
     }
     award({ type: "message", chars: text.length });
+    triggerXpBurst(10);
     setDraft("");
     setLangWarning(false);
   };
@@ -263,12 +279,22 @@ export const ChatScreen = () => {
             />
             <Paperclip className="h-4 w-4 text-muted-foreground" />
           </div>
-          <button
-            onClick={sendMessage}
-            className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
-          >
-            <Send className="h-4 w-4" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={sendMessage}
+              className="press flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary text-white shadow-glow"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+            {xpBurst && (
+              <span
+                key={xpBurst.id}
+                className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 animate-xp-burst rounded-full bg-gradient-primary px-2 py-0.5 text-[10px] font-bold text-white shadow-glow"
+              >
+                +{xpBurst.amount} XP
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-3">

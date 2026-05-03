@@ -3,6 +3,7 @@ import { IconButton } from "./IconButton";
 import { Avatar } from "./Avatar";
 import { useGamification } from "@/hooks/useGamification";
 import { useStreak } from "@/hooks/useStreak";
+import { tierForLevel } from "@/lib/gamification";
 
 const fmtTime = (s: number) => {
   if (s < 60) return `${s}s`;
@@ -13,6 +14,7 @@ const fmtTime = (s: number) => {
 export const ProfileScreen = () => {
   const { stats, level, badges } = useGamification();
   const streak = useStreak();
+  const tier = tierForLevel(level.level);
   const liveStats = [
     { label: "Messages",    value: String(stats.messages),         Icon: MessageCircle, tint: "text-cyan-400 bg-cyan-400/15" },
     { label: "Voice Time",  value: fmtTime(stats.speakSeconds),    Icon: Mic,           tint: "text-pink-400 bg-pink-400/15" },
@@ -30,7 +32,9 @@ export const ProfileScreen = () => {
         <div className="flex flex-col items-center text-center">
           <Avatar name="Omar" size="lg" online />
           <h3 className="mt-3 text-base font-bold">Omar</h3>
-          <span className="mt-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium text-primary-glow">Intermediate</span>
+          <span className="mt-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium text-primary-glow">
+            {tier} · Lv {level.level}
+          </span>
         </div>
         <div className="glass rounded-2xl p-4">
           <div className="mb-2 flex items-center justify-between text-xs">

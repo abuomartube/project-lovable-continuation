@@ -2,14 +2,16 @@ import { MessageCircle, Mic, DoorOpen, Award, Flame, Star, Trophy, Crown, type L
 
 export type XPEvent =
   | { type: "message"; chars?: number }
+  | { type: "voice-message" }
   | { type: "speak"; seconds: number }
   | { type: "join-room" }
   | { type: "topic-completed" };
 
 export const XP_RULES = {
-  message: 5,           // per message
-  messageBonus: 0.05,   // per char
-  speakPerSecond: 1,    // 60xp / minute
+  message: 10,          // per text message
+  messageBonus: 0.05,   // per char (cap 20)
+  voiceMessage: 20,     // per voice message
+  speakPerSecond: 1,    // 60xp / minute (live speaking)
   joinRoom: 25,
   topicCompleted: 40,
 } as const;
@@ -17,6 +19,7 @@ export const XP_RULES = {
 export const xpForEvent = (e: XPEvent): number => {
   switch (e.type) {
     case "message": return XP_RULES.message + Math.min(20, Math.floor((e.chars ?? 0) * XP_RULES.messageBonus));
+    case "voice-message": return XP_RULES.voiceMessage;
     case "speak": return Math.round(e.seconds * XP_RULES.speakPerSecond);
     case "join-room": return XP_RULES.joinRoom;
     case "topic-completed": return XP_RULES.topicCompleted;
@@ -42,6 +45,14 @@ export const computeLevel = (totalXp: number): LevelInfo => {
   }
   const needed = xpForLevel(level);
   return { level, intoLevel: remaining, needed, progress: needed === 0 ? 0 : remaining / needed };
+};
+
+export type Tier = "Beginner" | "Intermediate" | "Advanced" | "Expert";
+export const tierForLevel = (level: number): Tier => {
+  if (level >= 15) return "Expert";
+  if (level >= 8) return "Advanced";
+  if (level >= 4) return "Intermediate";
+  return "Beginner";
 };
 
 export interface Stats {
