@@ -1,7 +1,8 @@
-import { ChevronLeft, Edit3, MessageCircle, Mic, DoorOpen, Lock } from "lucide-react";
+import { ChevronLeft, Edit3, MessageCircle, Mic, DoorOpen, Lock, Flame } from "lucide-react";
 import { IconButton } from "./IconButton";
 import { Avatar } from "./Avatar";
 import { useGamification } from "@/hooks/useGamification";
+import { useStreak } from "@/hooks/useStreak";
 
 const fmtTime = (s: number) => {
   if (s < 60) return `${s}s`;
@@ -11,6 +12,7 @@ const fmtTime = (s: number) => {
 
 export const ProfileScreen = () => {
   const { stats, level, badges } = useGamification();
+  const streak = useStreak();
   const liveStats = [
     { label: "Messages",    value: String(stats.messages),         Icon: MessageCircle, tint: "text-cyan-400 bg-cyan-400/15" },
     { label: "Voice Time",  value: fmtTime(stats.speakSeconds),    Icon: Mic,           tint: "text-pink-400 bg-pink-400/15" },
@@ -47,6 +49,62 @@ export const ProfileScreen = () => {
             />
           </div>
           <p className="mt-2 text-[10px] text-muted-foreground">Total: {stats.totalXp} XP</p>
+        </div>
+        <div className="glass relative overflow-hidden rounded-2xl p-4">
+          <div
+            className={
+              "pointer-events-none absolute inset-0 opacity-60 " +
+              (streak.activeToday
+                ? "bg-gradient-to-br from-orange-500/15 via-transparent to-amber-400/10"
+                : "bg-gradient-to-br from-muted/20 via-transparent to-transparent")
+            }
+          />
+          <div className="relative flex items-center gap-3">
+            <span
+              className={
+                "flex h-11 w-11 items-center justify-center rounded-2xl shadow-glow " +
+                (streak.activeToday
+                  ? "bg-gradient-to-br from-orange-500 to-amber-400 text-white animate-soft-pulse"
+                  : "bg-secondary/60 text-muted-foreground")
+              }
+            >
+              <Flame className="h-5 w-5" />
+            </span>
+            <div className="flex-1">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-bold tabular-nums">{streak.current}</span>
+                <span className="text-xs text-muted-foreground">day{streak.current === 1 ? "" : "s"} streak</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                {streak.activeToday
+                  ? "You showed up today — keep it alive tomorrow!"
+                  : streak.atRisk
+                  ? "At risk! Practice today to keep your streak."
+                  : "Practice today to start a new streak."}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Best</div>
+              <div className="text-sm font-semibold tabular-nums">{streak.longest}</div>
+            </div>
+          </div>
+          <div className="relative mt-3 flex items-center justify-between gap-1">
+            {Array.from({ length: 7 }).map((_, i) => {
+              const dayIndex = 6 - i; // 0 = today
+              const filled = streak.activeToday
+                ? dayIndex < streak.current
+                : dayIndex > 0 && dayIndex <= streak.current;
+              return (
+                <div
+                  key={i}
+                  className={
+                    "h-1.5 flex-1 rounded-full " +
+                    (filled ? "bg-gradient-to-r from-orange-500 to-amber-400" : "bg-secondary/60")
+                  }
+                />
+              );
+            })}
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {liveStats.map((s) => (
