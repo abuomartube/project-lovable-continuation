@@ -1,4 +1,4 @@
-import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle, Wand2, Loader2, ShieldCheck, Languages, Smile as SmileIcon, Clock } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle, Wand2, Loader2, ShieldCheck, Languages, Smile as SmileIcon, Clock, Target, Mic2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
@@ -12,6 +12,7 @@ import { PresenceToasts } from "./PresenceToasts";
 import { RaiseHandButton } from "./RaiseHandButton";
 import { CorrectionDialog } from "./CorrectionDialog";
 import { RoomRulesBanner } from "./RoomRulesBanner";
+import { pickRandomChallenge } from "@/lib/challenges";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
@@ -34,6 +35,9 @@ interface TextMsg {
   highlight?: boolean;
   pinned?: boolean;
   broadcast?: boolean;
+  bestMessage?: boolean;
+  challenge?: boolean;
+  voiceNote?: { duration: number; seed: number };
   correction?: Correction;
 }
 
@@ -174,6 +178,39 @@ export const ChatScreen = () => {
     setBroadcasting(false);
   };
 
+  const sendDailyChallenge = () => {
+    if (!isTeacher) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [...prev, {
+      id: `ch-${Date.now()}`,
+      author: "Ms. Reem",
+      authorRole: "teacher",
+      text: pickRandomChallenge(),
+      time,
+      challenge: true,
+    }]);
+  };
+
+  const sendTeacherVoiceNote = () => {
+    if (!isTeacher) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const duration = 18 + Math.floor(Math.random() * 24);
+    setMessages((prev) => [...prev, {
+      id: `vn-${Date.now()}`,
+      author: "Ms. Reem",
+      authorRole: "teacher",
+      text: "",
+      time,
+      voiceNote: { duration, seed: Math.floor(Math.random() * 1000) },
+    }]);
+  };
+
+  const toggleBest = (id: string) => {
+    setMessages((prev) => prev.map((x) =>
+      x.id === id ? { ...x, bestMessage: !x.bestMessage } : { ...x, bestMessage: false }
+    ));
+  };
+
   const { online, typing, events } = useLivePresence(18);
 
   const [langWarning, setLangWarning] = useState(false);
@@ -209,6 +246,13 @@ export const ChatScreen = () => {
                 +13
               </span>
             </div>
+            <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-200 shadow-[0_0_10px_hsl(35_95%_55%/0.25)] ring-1 ring-amber-400/40">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-300 opacity-70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-300" />
+              </span>
+              <GraduationCap className="h-2.5 w-2.5" /> Teacher Online
+            </span>
           </div>
         </div>
         <button
@@ -296,30 +340,79 @@ export const ChatScreen = () => {
           </div>
         ) : (
           <>
-        {messages.map((m) => (
-          <ChatBubble
-            key={m.id}
-            author={m.author}
-            authorRole={m.authorRole}
-            text={m.text}
-            time={m.time}
-            side={m.side}
-            reactions={m.reactions}
-            highlight={m.highlight}
-            pinned={m.pinned}
-            broadcast={m.broadcast}
-            correction={m.correction}
-            learning={analyses[m.id] ?? null}
-            learningLoading={!!analyzingIds[m.id]}
-            onApplyImproved={(improved) => updateMsg(m.id, { text: improved })}
-            isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
-            onCorrect={() => setCorrecting(m)}
-            onTogglePin={() => setMessages((prev) => prev.map((x) =>
-              x.id === m.id ? { ...x, pinned: !x.pinned } : { ...x, pinned: false }
-            ))}
-            onToggleHighlight={() => updateMsg(m.id, { highlight: !m.highlight })}
-          />
-        ))}
+        {messages.map((m) => {
+          if (m.voiceNote) {
+            return (
+              <div key={m.id} className="flex w-full gap-2 animate-bubble-in-l">
+                <Avatar name={m.author} size="sm" />
+                <div className="flex max-w-[78%] flex-col gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">{m.author}</span>
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-amber-950 shadow-[0_0_10px_hsl(35_95%_55%/0.45)]">
+                      <GraduationCap className="h-2.5 w-2.5" /> Teacher
+                    </span>
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[8px] font-semibold text-amber-200">
+                      <Mic2 className="h-2.5 w-2.5" /> Voice note
+                    </span>
+                  </div>
+                  <VoiceBubble
+                    duration={m.voiceNote.duration}
+                    time={m.time}
+                    seed={m.voiceNote.seed}
+                  />
+                </div>
+              </div>
+            );
+          }
+          if (m.challenge) {
+            return (
+              <div key={m.id} className="mx-auto w-full max-w-[92%] animate-bubble-in-l">
+                <div className="relative overflow-hidden rounded-[20px] border border-amber-400/40 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent px-4 py-3 shadow-[0_0_24px_hsl(35_95%_55%/0.25)]">
+                  <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-400/20 blur-2xl" />
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-amber-950 shadow-glow">
+                      <Target className="h-4 w-4" />
+                    </span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">Daily Challenge</span>
+                        <span className="ml-auto text-[10px] text-muted-foreground">{m.time}</span>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-amber-50">{m.text}</p>
+                      <p className="mt-0.5 text-[10px] text-amber-200/70">— {m.author}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <ChatBubble
+              key={m.id}
+              author={m.author}
+              authorRole={m.authorRole}
+              text={m.text}
+              time={m.time}
+              side={m.side}
+              reactions={m.reactions}
+              highlight={m.highlight}
+              pinned={m.pinned}
+              broadcast={m.broadcast}
+              bestMessage={m.bestMessage}
+              correction={m.correction}
+              learning={analyses[m.id] ?? null}
+              learningLoading={!!analyzingIds[m.id]}
+              onApplyImproved={(improved) => updateMsg(m.id, { text: improved })}
+              isTeacherViewer={isTeacher && m.authorRole === "student" && m.side !== "right"}
+              onCorrect={() => setCorrecting(m)}
+              onTogglePin={() => setMessages((prev) => prev.map((x) =>
+                x.id === m.id ? { ...x, pinned: !x.pinned } : { ...x, pinned: false }
+              ))}
+              onToggleHighlight={() => updateMsg(m.id, { highlight: !m.highlight })}
+              onToggleBest={() => toggleBest(m.id)}
+            />
+          );
+        })}
 
         {/* You: Voice */}
         <VoiceBubble duration="0:18" time="10:22 AM" side="right" />
@@ -385,12 +478,26 @@ export const ChatScreen = () => {
         {isTeacher && (
           <div className="mb-2.5 animate-fade-in">
             {!broadcasting ? (
-              <button
-                onClick={() => setBroadcasting(true)}
-                className="press flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:bg-amber-400/15"
-              >
-                <Megaphone className="h-3.5 w-3.5" /> Broadcast to room
-              </button>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => setBroadcasting(true)}
+                  className="press flex flex-col items-center justify-center gap-1 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-2 py-2 text-[10px] font-semibold text-amber-200 hover:bg-amber-400/15"
+                >
+                  <Megaphone className="h-4 w-4" /> Broadcast
+                </button>
+                <button
+                  onClick={sendTeacherVoiceNote}
+                  className="press flex flex-col items-center justify-center gap-1 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-2 py-2 text-[10px] font-semibold text-amber-200 hover:bg-amber-400/15"
+                >
+                  <Mic2 className="h-4 w-4" /> Voice note
+                </button>
+                <button
+                  onClick={sendDailyChallenge}
+                  className="press flex flex-col items-center justify-center gap-1 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-2 py-2 text-[10px] font-semibold text-amber-200 hover:bg-amber-400/15"
+                >
+                  <Target className="h-4 w-4" /> Challenge
+                </button>
+              </div>
             ) : (
               <div className="flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-2">
                 <Megaphone className="h-4 w-4 shrink-0 text-amber-300" />
