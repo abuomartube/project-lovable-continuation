@@ -1,4 +1,4 @@
-import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle, Wand2, Loader2, ShieldCheck, Languages, Smile as SmileIcon, Clock } from "lucide-react";
+import { ChevronLeft, Mic, FileText, Download, Heart, Smile, Paperclip, Send, Lightbulb, Snowflake, Image as ImageIcon, VolumeX, Volume2, GraduationCap, Megaphone, Pin, X, HelpCircle, Wand2, Loader2, ShieldCheck, Languages, Smile as SmileIcon, Clock, Target, Mic2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "./Skeleton";
 import { Avatar } from "./Avatar";
@@ -12,6 +12,7 @@ import { PresenceToasts } from "./PresenceToasts";
 import { RaiseHandButton } from "./RaiseHandButton";
 import { CorrectionDialog } from "./CorrectionDialog";
 import { RoomRulesBanner } from "./RoomRulesBanner";
+import { pickRandomChallenge } from "@/lib/challenges";
 import { useVoice } from "@/hooks/useVoice";
 import { useGamification } from "@/hooks/useGamification";
 import { useLivePresence } from "@/hooks/useLivePresence";
@@ -34,6 +35,9 @@ interface TextMsg {
   highlight?: boolean;
   pinned?: boolean;
   broadcast?: boolean;
+  bestMessage?: boolean;
+  challenge?: boolean;
+  voiceNote?: { duration: number; seed: number };
   correction?: Correction;
 }
 
@@ -172,6 +176,39 @@ export const ChatScreen = () => {
     }]);
     setBroadcastText("");
     setBroadcasting(false);
+  };
+
+  const sendDailyChallenge = () => {
+    if (!isTeacher) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setMessages((prev) => [...prev, {
+      id: `ch-${Date.now()}`,
+      author: "Ms. Reem",
+      authorRole: "teacher",
+      text: pickRandomChallenge(),
+      time,
+      challenge: true,
+    }]);
+  };
+
+  const sendTeacherVoiceNote = () => {
+    if (!isTeacher) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const duration = 18 + Math.floor(Math.random() * 24);
+    setMessages((prev) => [...prev, {
+      id: `vn-${Date.now()}`,
+      author: "Ms. Reem",
+      authorRole: "teacher",
+      text: "",
+      time,
+      voiceNote: { duration, seed: Math.floor(Math.random() * 1000) },
+    }]);
+  };
+
+  const toggleBest = (id: string) => {
+    setMessages((prev) => prev.map((x) =>
+      x.id === id ? { ...x, bestMessage: !x.bestMessage } : { ...x, bestMessage: false }
+    ));
   };
 
   const { online, typing, events } = useLivePresence(18);
